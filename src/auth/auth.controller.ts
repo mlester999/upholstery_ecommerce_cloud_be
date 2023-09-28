@@ -2,29 +2,84 @@
 
 import {
   Controller,
+  Get,
   Post,
   Body,
-  HttpException,
-  HttpStatus,
+  Req,
+  Res,
+  BadRequestException,
 } from '@nestjs/common';
+import { JwtService } from '@nestjs/jwt';
 import { UserService } from '../user/user.service';
-import { User } from '../user/entities/user.entity';
+import * as bcrypt from 'bcrypt';
+import { UnauthorizedException } from '@nestjs/common/exceptions/unauthorized.exception';
 
 @Controller('auth')
 export class AuthController {
-  constructor(private readonly userService: UserService) {}
+  constructor(
+    private readonly userService: UserService,
+    private readonly jwtService: JwtService,
+  ) {}
 
   @Post('login')
-  async login(@Body() credentials: { email: string; password: string }) {
-    const user = await this.userService.findByEmail(credentials.email);
+  async login(
+    @Body('email') email: string,
+    @Body('password') password: string,
+    @Res({ passthrough: true }) res,
+  ) {
+    const user = await this.userService.findByEmail(email);
 
-    if (!user || user.password !== credentials.password) {
-      throw new HttpException('Invalid credentials', HttpStatus.UNAUTHORIZED);
+    if (!user) {
+      throw new BadRequestException(
+        'No account is associated with the email provided.',
+      );
     }
 
-    // Generate and return a JWT token here
-    // You'll need to implement JWT token generation logic
+    if (!(await bcrypt.compare(password, user.password))) {
+      throw new BadRequestException('Invalid credentials.');
+    }
 
-    return { message: 'Login successful', token: 'your_generated_token' };
+    const jwt = await this.jwtService.signAsync({ id: user.id });
+
+    res.cookie('user_token', jwt, {
+      expires: new Date(Date.now() + 3 * 60 * 60 * 1000),
+      httpOnly: true,
+      sameSite: 'none',
+      secure: true,
+    });
+
+    return { message: 'Login successfully.' };
+  }
+
+  @Post('logout')
+  async logout(@Res({ passthrough: true }) res) {
+    res.cookie('user_token', {
+      expires: new Date(Date.now()),
+      httpOnly: true,
+      sameSite: 'none',
+      secure: true,
+    });
+    return { message: 'Logout successfully.' };
+  }
+
+  @Get('user')
+  async user(@Req() request) {
+    try {
+      const cookie = request.cookies['user_token'];
+
+      const data = await this.jwtService.verifyAsync(cookie);
+
+      if (!data) {
+        throw new UnauthorizedException();
+      }
+
+      const user = await this.userService.findById(parseInt(data['id']));
+
+      const { password, ...result } = user;
+
+      return result;
+    } catch (e) {
+      throw new UnauthorizedException();
+    }
   }
 }

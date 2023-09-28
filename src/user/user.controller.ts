@@ -27,7 +27,7 @@ export class UserController {
    * so the API URL to create User will be
    * POST http://localhost:3000/user
    */
-  @Post()
+  @Post('signup')
   create(@Body() createUserDto: CreateUserDto) {
     return this.userService.createUser(createUserDto);
   }
@@ -37,7 +37,7 @@ export class UserController {
    * so the API URL will be
    * GET http://localhost:3000/user
    */
-  @Get()
+  @Get('all')
   findAll() {
     return this.userService.findAllUser();
   }
