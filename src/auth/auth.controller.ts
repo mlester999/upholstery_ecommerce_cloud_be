@@ -53,8 +53,7 @@ export class AuthController {
 
   @Post('logout')
   async logout(@Res({ passthrough: true }) res) {
-    res.cookie('user_token', {
-      expires: new Date(Date.now()),
+    res.clearCookie('user_token', {
       httpOnly: true,
       sameSite: 'none',
       secure: true,
