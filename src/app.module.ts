@@ -5,6 +5,10 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { UserModule } from './user/user.module';
 import { User } from './user/entities/user.entity';
 import { AuthModule } from './auth/auth.module';
+import { AdminModule } from './admin/admin.module';
+import { Admin } from './admin/entities/admin.entity';
+import { CustomerModule } from './customer/customer.module';
+import { Customer } from './customer/entities/customer.entity';
 
 @Module({
   imports: [
@@ -14,13 +18,15 @@ import { AuthModule } from './auth/auth.module';
       port: 5432,
       username: 'postgres',
       password: 'tw0t0w3rs',
-      entities: [User],
+      entities: [User, Admin, Customer],
       database: 'upholstery-ecommerce',
       synchronize: true,
       logging: true,
     }),
     UserModule,
     AuthModule,
+    AdminModule,
+    CustomerModule,
   ],
   controllers: [AppController],
   providers: [AppService],

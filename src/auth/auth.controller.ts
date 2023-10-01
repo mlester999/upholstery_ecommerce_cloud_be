@@ -13,33 +13,85 @@ import { JwtService } from '@nestjs/jwt';
 import { UserService } from '../user/user.service';
 import * as bcrypt from 'bcrypt';
 import { UnauthorizedException } from '@nestjs/common/exceptions/unauthorized.exception';
+import { CreateUserDto } from 'src/user/dto/create-user.dto';
+import { CreateAdminDto } from 'src/admin/dto/create-admin.dto';
+import { AdminService } from 'src/admin/admin.service';
+import { UserType } from 'src/user/entities/user.entity';
+import { CustomerService } from 'src/customer/customer.service';
+import { CreateCustomerDto } from 'src/customer/dto/create-customer.dto';
 
 @Controller('auth')
 export class AuthController {
   constructor(
     private readonly userService: UserService,
+    private readonly adminService: AdminService,
+    private readonly customerService: CustomerService,
     private readonly jwtService: JwtService,
   ) {}
 
-  @Post('login')
-  async login(
+  @Post('/customer/sign-up')
+  async customerSignUp(
+    @Body() createUserDto: CreateUserDto,
+    @Body() createCustomerDto: CreateCustomerDto,
+  ) {
+    const user = await this.userService.createUser(
+      createUserDto,
+      UserType.Customer,
+    );
+
+    if (!user) {
+      throw new BadRequestException('Failed creating a user.');
+    }
+
+    const customer = await this.customerService.createCustomer(
+      createCustomerDto,
+      user,
+    );
+
+    return { user, customer };
+  }
+
+  @Post('/admin/sign-up')
+  async adminSignUp(
+    @Body() createUserDto: CreateUserDto,
+    @Body() createAdminDto: CreateAdminDto,
+  ) {
+    const user = await this.userService.createUser(
+      createUserDto,
+      UserType.Admin,
+    );
+
+    if (!user) {
+      throw new BadRequestException('Failed creating a user.');
+    }
+
+    const admin = await this.adminService.createAdmin(createAdminDto, user);
+
+    return { user, admin };
+  }
+
+  @Post('/admin/login')
+  async adminLogin(
     @Body('email') email: string,
     @Body('password') password: string,
     @Res({ passthrough: true }) res,
   ) {
-    const user = await this.userService.findByEmail(email);
+    const admin = await this.adminService.findByEmail(email);
 
-    if (!user) {
+    if (!admin) {
       throw new BadRequestException(
         'No account is associated with the email provided.',
       );
     }
 
-    if (!(await bcrypt.compare(password, user.password))) {
+    if (!(await bcrypt.compare(password, admin.user.password))) {
       throw new BadRequestException('Invalid credentials.');
     }
 
-    const jwt = await this.jwtService.signAsync({ id: user.id });
+    const jwt = await this.jwtService.signAsync({
+      id: admin.id,
+      user_id: admin.user.id,
+    });
 
     res.cookie('user_token', jwt, {
       expires: new Date(Date.now() + 3 * 60 * 60 * 1000),
@@ -62,7 +114,7 @@ export class AuthController {
   }
 
   @Get('user')
-  async user(@Req() request) {
+  async getUser(@Req() request) {
     try {
       const cookie = request.cookies['user_token'];
 
@@ -72,13 +124,39 @@ export class AuthController {
         throw new UnauthorizedException();
       }
 
-      const user = await this.userService.findById(parseInt(data['id']));
+      const user = await this.userService.findById(parseInt(data['user_id']));
 
-      const { password, ...result } = user;
+      if (user.user_type === UserType.Admin) {
+        const admin = await this.adminService.findById(parseInt(data['id']));
 
-      return result;
+        const { password, ...result } = user;
+
+        return {
+          user: result,
+          ...admin,
+        };
+      } else {
+        return { message: 'No User found.' };
+      }
     } catch (e) {
       throw new UnauthorizedException();
+    }
+  }
+
+  @Post('user')
+  async updateUser(@Body() body: any) {
+    if (Object.keys(body).length === 0) return;
+
+    if (body?.email) {
+      await this.userService.updateUser(body.email);
+    }
+
+    const admin = await this.adminService.findById(body.id);
+
+    if (admin.user.user_type === UserType.Admin) {
+      await this.adminService.updateAdmin(body);
+
+      return { message: 'Updated details successfully.' };
     }
   }
 }

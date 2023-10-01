@@ -22,17 +22,6 @@ export class UserController {
   constructor(private readonly userService: UserService) {}
 
   /**
-   * Post decorator represents method of request as we have used post decorator the method
-   * of this API will be post.
-   * so the API URL to create User will be
-   * POST http://localhost:3000/user
-   */
-  @Post('signup')
-  create(@Body() createUserDto: CreateUserDto) {
-    return this.userService.createUser(createUserDto);
-  }
-
-  /**
    * we have used get decorator to get all the user's list
    * so the API URL will be
    * GET http://localhost:3000/user
@@ -59,7 +48,7 @@ export class UserController {
    */
   @Patch(':id')
   update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
-    return this.userService.updateUser(+id, updateUserDto);
+    return this.userService.updateUser(+id);
   }
 
   /**

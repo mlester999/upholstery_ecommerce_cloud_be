@@ -1,9 +1,9 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
-import { User } from './entities/user.entity';
+import { ActiveType, User, UserType } from './entities/user.entity';
 import * as bcrypt from 'bcrypt';
 
 @Injectable()
@@ -22,15 +22,15 @@ export class UserService {
    * we have defined what are the keys we are expecting from body
    * @returns promise of user
    */
-  async createUser(createUserDto: CreateUserDto): Promise<User> {
+  async createUser(
+    createUserDto: CreateUserDto,
+    userType: number,
+  ): Promise<User> {
     const user: User = new User();
 
-    user.first_name = createUserDto.first_name;
-    user.middle_name = createUserDto.middle_name;
-    user.last_name = createUserDto.last_name;
-    user.age = createUserDto.age;
     user.email = createUserDto.email;
-    user.gender = createUserDto.gender;
+    user.user_type = userType;
+    user.is_active = ActiveType.Active;
 
     const salt = await bcrypt.genSalt();
     const hashedPassword = await bcrypt.hash(createUserDto.password, salt);
@@ -71,17 +71,18 @@ export class UserService {
    * @param updateUserDto this is partial type of createUserDto.
    * @returns promise of udpate user
    */
-  async updateUser(id: number, updateUserDto: UpdateUserDto): Promise<User> {
-    const user: User = new User();
-    user.first_name = updateUserDto.first_name;
-    user.middle_name = updateUserDto.middle_name;
-    user.last_name = updateUserDto.last_name;
-    user.age = updateUserDto.age;
-    user.email = updateUserDto.email;
-    user.password = updateUserDto.password;
-    user.gender = updateUserDto.gender;
-    user.id = id;
-    return this.userRepository.save(user);
+  async updateUser(details: any): Promise<User> {
+    const user = await this.findByEmail(details.email);
+
+    if (!user) {
+      throw new NotFoundException(
+        `User with Email: ${details.email} not found`,
+      );
+    }
+
+    user.email = details.email;
+
+    return await this.userRepository.save(user);
   }
 
   /**
