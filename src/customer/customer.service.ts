@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { CreateCustomerDto } from './dto/create-customer.dto';
@@ -40,8 +40,8 @@ export class CustomerService {
     customer.province = createCustomerDto.province;
     customer.city = createCustomerDto.city;
     customer.barangay = createCustomerDto.barangay;
-    customer.postal_code = createCustomerDto.postal_code;
-    customer.street_name = createCustomerDto.street_name;
+    customer.zip_code = createCustomerDto.zip_code;
+    customer.street_address = createCustomerDto.street_address;
 
     return this.customerRepository.save(customer);
   }
@@ -59,7 +59,21 @@ export class CustomerService {
   }
 
   async findById(id: number): Promise<Customer | undefined> {
-    return this.customerRepository.findOneBy({ id });
+    return this.customerRepository.findOne({
+      where: { id },
+      relations: {
+        user: true,
+      },
+    });
+  }
+
+  async findByEmail(email: string): Promise<Customer | undefined> {
+    return this.customerRepository.findOne({
+      where: { user: { email } },
+      relations: {
+        user: true,
+      },
+    });
   }
 
   /**
@@ -78,26 +92,66 @@ export class CustomerService {
    * @param updateUserDto this is partial type of createUserDto.
    * @returns promise of udpate user
    */
-  async updateCustomer(
-    id: number,
-    updateCustomerDto: UpdateCustomerDto,
-  ): Promise<Customer> {
-    const customer: Customer = new Customer();
+  async updateCustomer(body: any, id: number): Promise<Customer> {
+    const customer = await this.customerRepository.findOneBy({
+      id,
+    });
 
-    customer.first_name = updateCustomerDto.first_name;
-    customer.middle_name = updateCustomerDto.middle_name;
-    customer.last_name = updateCustomerDto.last_name;
-    customer.gender = updateCustomerDto.gender;
-    customer.birth_date = updateCustomerDto.birth_date;
-    customer.contact_number = updateCustomerDto.contact_number;
-    customer.region = updateCustomerDto.region;
-    customer.province = updateCustomerDto.province;
-    customer.city = updateCustomerDto.city;
-    customer.barangay = updateCustomerDto.barangay;
-    customer.postal_code = updateCustomerDto.postal_code;
-    customer.street_name = updateCustomerDto.street_name;
-    customer.id = id;
-    return this.customerRepository.save(customer);
+    if (!customer) {
+      throw new NotFoundException(`Customer not found`);
+    }
+
+    if (Object.keys(body.details).length <= 1 && body.details.email) return;
+
+    if (body.details.first_name) {
+      customer.first_name = body.details.first_name;
+    }
+
+    if (body.details.middle_name || body.details.middle_name === '') {
+      customer.middle_name = body.details.middle_name;
+    }
+
+    if (body.details.last_name) {
+      customer.last_name = body.details.last_name;
+    }
+
+    if (body.details.gender) {
+      customer.gender = body.details.gender;
+    }
+
+    if (body.details.birth_date) {
+      customer.birth_date = body.details.birth_date;
+    }
+
+    if (body.details.contact_number) {
+      customer.contact_number = body.details.contact_number;
+    }
+
+    if (body.details.region) {
+      customer.region = body.details.region;
+    }
+
+    if (body.details.province) {
+      customer.province = body.details.province;
+    }
+
+    if (body.details.city) {
+      customer.city = body.details.city;
+    }
+
+    if (body.details.barangay) {
+      customer.barangay = body.details.barangay;
+    }
+
+    if (body.details.zip_code) {
+      customer.zip_code = body.details.zip_code;
+    }
+
+    if (body.details.street_address) {
+      customer.street_address = body.details.street_address;
+    }
+
+    return await this.customerRepository.save(customer);
   }
 
   /**

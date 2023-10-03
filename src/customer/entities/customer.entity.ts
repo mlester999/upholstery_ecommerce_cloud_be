@@ -57,10 +57,10 @@ export class Customer {
   barangay: string;
 
   @Column({ type: 'varchar', length: 10 })
-  postal_code: string;
+  zip_code: string;
 
   @Column({ type: 'varchar', length: 255 })
-  street_name: string;
+  street_address: string;
 
   @CreateDateColumn()
   created_at: Date;

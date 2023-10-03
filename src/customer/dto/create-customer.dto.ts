@@ -57,12 +57,12 @@ export class CreateCustomerDto {
   barangay: string;
 
   @IsString()
-  @MinLength(2, { message: 'Postal Code must have atleast 2 characters.' })
+  @MinLength(2, { message: 'Zip Code must have atleast 2 characters.' })
   @IsNotEmpty()
-  postal_code: string;
+  zip_code: string;
 
   @IsString()
-  @MinLength(2, { message: 'Street Name must have atleast 2 characters.' })
+  @MinLength(2, { message: 'Street Address must have atleast 2 characters.' })
   @IsNotEmpty()
-  street_name: string;
+  street_address: string;
 }

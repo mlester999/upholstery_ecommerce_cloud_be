@@ -46,10 +46,10 @@ export class UserController {
    * so the API URL will be
    * PATCH http://localhost:3000/user/:id
    */
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
-    return this.userService.updateUser(+id);
-  }
+  // @Patch(':id')
+  // update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
+  //   return this.userService.updateUser(+id);
+  // }
 
   /**
    * we have used Delete decorator with id param to get id from request

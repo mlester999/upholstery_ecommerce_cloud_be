@@ -145,13 +145,16 @@ export class AuthController {
 
   @Post('user')
   async updateUser(@Body() body: any) {
-    if (Object.keys(body).length === 0) return;
+    if (Object.keys(body.details).length === 0) return;
 
-    if (body?.email) {
-      await this.userService.updateUser(body.email);
+    if (body?.details.email) {
+      await this.userService.updateUser(
+        body.details.user_id,
+        body.details.email,
+      );
     }
 
-    const admin = await this.adminService.findById(body.id);
+    const admin = await this.adminService.findById(body.details.id);
 
     if (admin.user.user_type === UserType.Admin) {
       await this.adminService.updateAdmin(body);

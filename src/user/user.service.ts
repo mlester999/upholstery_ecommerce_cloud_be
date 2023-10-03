@@ -33,7 +33,7 @@ export class UserService {
     user.is_active = ActiveType.Active;
 
     const salt = await bcrypt.genSalt();
-    const hashedPassword = await bcrypt.hash(createUserDto.password, salt);
+    const hashedPassword = await bcrypt.hash('12345678', salt);
     user.password = hashedPassword;
 
     return this.userRepository.save(user);
@@ -64,6 +64,30 @@ export class UserService {
     return this.userRepository.findOneBy({ id });
   }
 
+  async deactivateUser(id: number): Promise<User> {
+    const user = await this.findById(id);
+
+    if (!user) {
+      throw new NotFoundException(`User not found`);
+    }
+
+    user.is_active = 0;
+
+    return await this.userRepository.save(user);
+  }
+
+  async activateUser(id: number): Promise<User> {
+    const user = await this.findById(id);
+
+    if (!user) {
+      throw new NotFoundException(`User not found`);
+    }
+
+    user.is_active = 1;
+
+    return await this.userRepository.save(user);
+  }
+
   /**
    * this function is used to updated specific user whose id is passed in
    * parameter along with passed updated data
@@ -71,16 +95,14 @@ export class UserService {
    * @param updateUserDto this is partial type of createUserDto.
    * @returns promise of udpate user
    */
-  async updateUser(details: any): Promise<User> {
-    const user = await this.findByEmail(details.email);
+  async updateUser(id: number, email: string): Promise<User> {
+    const user = await this.findById(id);
 
     if (!user) {
-      throw new NotFoundException(
-        `User with Email: ${details.email} not found`,
-      );
+      throw new NotFoundException(`User not found`);
     }
 
-    user.email = details.email;
+    user.email = email;
 
     return await this.userRepository.save(user);
   }

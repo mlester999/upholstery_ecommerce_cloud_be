@@ -86,22 +86,20 @@ export class AdminService {
    * @returns promise of udpate user
    */
   async updateAdmin(body: any): Promise<Admin> {
-    const admin = await this.adminRepository.findOneBy({ id: body.id });
+    const admin = await this.adminRepository.findOneBy({ id: body.details.id });
 
     if (!admin) {
       throw new NotFoundException(`Admin not found`);
     }
 
-    if (Object.keys(body).length <= 1 && body.details.email) return;
+    if (Object.keys(body.details).length <= 1 && body.details.email) return;
 
     if (body.details.firstName) {
       admin.first_name = body.details.firstName;
     }
 
-    if (body.details.middleName) {
+    if (body.details.middleName || body.details.middleName === '') {
       admin.middle_name = body.details.middleName;
-    } else {
-      admin.middle_name = '';
     }
 
     if (body.details.lastName) {
