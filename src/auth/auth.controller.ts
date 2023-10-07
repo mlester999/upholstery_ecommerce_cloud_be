@@ -192,13 +192,12 @@ export class AuthController {
 
       const user = await this.userService.findById(userId);
 
-      const salt = await bcrypt.genSalt();
-      const hashedCurrentPassword = await bcrypt.hash(
+      const comparePass = await bcrypt.compare(
         body.details.current_password,
-        salt,
+        user.password,
       );
 
-      if (bcrypt.compareSync(user.password, hashedCurrentPassword)) {
+      if (comparePass) {
         if (body.details.new_password === body.details.confirm_new_password) {
           await this.userService.updatePassword(
             userId,
@@ -217,7 +216,6 @@ export class AuthController {
 
       return { message: 'Updated password successfully.' };
     } catch (e) {
-      console.log(e);
       if (
         e.response?.message ===
         'The new password and the confirm new password does not match.'
