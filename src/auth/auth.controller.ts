@@ -176,7 +176,11 @@ export class AuthController {
   }
 
   @Post('password')
-  async updatePass(@Body() body: any, @Req() request) {
+  async updatePass(
+    @Body() body: any,
+    @Req() request,
+    @Res({ passthrough: true }) res,
+  ) {
     try {
       const cookie = request.cookies['user_token'];
 
@@ -203,6 +207,14 @@ export class AuthController {
             userId,
             body.details.new_password,
           );
+
+          await res.clearCookie('user_token', {
+            httpOnly: true,
+            sameSite: 'none',
+            secure: true,
+          });
+
+          return { message: 'Updated password successfully.' };
         } else {
           throw new BadRequestException(
             'The new password and the confirm new password does not match.',
@@ -213,8 +225,6 @@ export class AuthController {
           'The current password that you provided is wrong.',
         );
       }
-
-      return { message: 'Updated password successfully.' };
     } catch (e) {
       if (
         e.response?.message ===
