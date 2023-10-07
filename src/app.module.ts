@@ -9,6 +9,8 @@ import { AdminModule } from './admin/admin.module';
 import { Admin } from './admin/entities/admin.entity';
 import { CustomerModule } from './customer/customer.module';
 import { Customer } from './customer/entities/customer.entity';
+import { SellerModule } from './seller/seller.module';
+import { Seller } from './seller/entities/seller.entity';
 
 @Module({
   imports: [
@@ -18,7 +20,7 @@ import { Customer } from './customer/entities/customer.entity';
       port: 5432,
       username: 'postgres',
       password: 'tw0t0w3rs',
-      entities: [User, Admin, Customer],
+      entities: [User, Admin, Customer, Seller],
       database: 'upholstery-ecommerce',
       synchronize: true,
       logging: true,
@@ -27,6 +29,7 @@ import { Customer } from './customer/entities/customer.entity';
     AuthModule,
     AdminModule,
     CustomerModule,
+    SellerModule,
   ],
   controllers: [AppController],
   providers: [AppService],

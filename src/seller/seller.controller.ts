@@ -13,12 +13,12 @@ import { JwtService } from '@nestjs/jwt';
 import { response } from 'express';
 import { UserType } from 'src/user/entities/user.entity';
 import { UserService } from 'src/user/user.service';
-import { CustomerService } from './customer.service';
+import { SellerService } from './seller.service';
 
-@Controller('customer')
-export class CustomerController {
+@Controller('seller')
+export class SellerController {
   constructor(
-    private readonly customerService: CustomerService,
+    private readonly sellerService: SellerService,
     private readonly userService: UserService,
     private readonly jwtService: JwtService,
   ) {}
@@ -34,14 +34,14 @@ export class CustomerController {
         throw new UnauthorizedException();
       }
 
-      return this.customerService.findAllCustomer();
+      return this.sellerService.findAllSeller();
     } catch (e) {
       throw new UnauthorizedException();
     }
   }
 
-  @Get(':customer_id')
-  async findOne(@Req() request, @Param('customer_id') customerId) {
+  @Get(':seller_id')
+  async findOne(@Req() request, @Param('seller_id') sellerId) {
     try {
       const cookie = request.cookies['user_token'];
 
@@ -51,15 +51,14 @@ export class CustomerController {
         throw new UnauthorizedException();
       }
 
-      return this.customerService.findById(parseInt(customerId));
+      return this.sellerService.findById(parseInt(sellerId));
     } catch (e) {
       throw new UnauthorizedException();
     }
   }
 
   @Post('add')
-  async addCustomer(@Body() body: any, @Req() request) {
-    console.log(body);
+  async addSeller(@Body() body: any, @Req() request) {
     try {
       const cookie = request.cookies['user_token'];
 
@@ -71,11 +70,9 @@ export class CustomerController {
 
       if (Object.keys(body.details).length === 0) return;
 
-      const customer = await this.customerService.findByEmail(
-        body?.details.email,
-      );
+      const seller = await this.sellerService.findByEmail(body?.details.email);
 
-      if (customer) {
+      if (seller) {
         throw new BadRequestException(
           'The email address that you provided is already taken.',
         );
@@ -83,16 +80,16 @@ export class CustomerController {
 
       const newUser = await this.userService.createUser(
         body.details,
-        UserType.Customer,
+        UserType.Seller,
       );
 
       if (!newUser) {
         throw new BadRequestException('Failed creating a user.');
       }
 
-      await this.customerService.createCustomer(body.details, newUser);
+      await this.sellerService.createSeller(body.details, newUser);
 
-      return { message: 'Created Customer Successfully.' };
+      return { message: 'Created Seller Successfully.' };
     } catch (e) {
       if (
         e.response.message ===
@@ -106,10 +103,10 @@ export class CustomerController {
     }
   }
 
-  @Patch('update/:customer_id')
-  async updateCustomer(
+  @Patch('update/:seller_id')
+  async updateSeller(
     @Body() body: any,
-    @Param('customer_id') customerId,
+    @Param('seller_id') sellerId,
     @Req() request,
   ) {
     try {
@@ -124,11 +121,9 @@ export class CustomerController {
       if (Object.keys(body.details).length === 0) return;
 
       if (body?.details.email) {
-        const customer = await this.customerService.findByEmail(
-          body.details.email,
-        );
+        const seller = await this.sellerService.findByEmail(body.details.email);
 
-        if (customer) {
+        if (seller) {
           throw new BadRequestException(
             'The email address that you provided is already taken.',
           );
@@ -140,12 +135,12 @@ export class CustomerController {
         }
       }
 
-      const customer = await this.customerService.findById(body.details.id);
+      const seller = await this.sellerService.findById(body.details.id);
 
-      if (customer.user.user_type === UserType.Customer) {
-        await this.customerService.updateCustomer(body, parseInt(customerId));
+      if (seller.user.user_type === UserType.Seller) {
+        await this.sellerService.updateSeller(body, parseInt(sellerId));
 
-        return { message: 'Updated customer details successfully.' };
+        return { message: 'Updated seller details successfully.' };
       }
     } catch (e) {
       if (
@@ -160,8 +155,8 @@ export class CustomerController {
     }
   }
 
-  @Patch('deactivate/:customer_id')
-  async deactivateCustomer(@Param('customer_id') customerId, @Req() request) {
+  @Patch('deactivate/:seller_id')
+  async deactivateSeller(@Param('seller_id') sellerId, @Req() request) {
     try {
       const cookie = request.cookies['user_token'];
 
@@ -171,27 +166,27 @@ export class CustomerController {
         throw new UnauthorizedException();
       }
 
-      const customer = await this.customerService.findById(customerId);
+      const seller = await this.sellerService.findById(sellerId);
 
-      if (!customer) {
-        throw new BadRequestException('No Customer Found.');
+      if (!seller) {
+        throw new BadRequestException('No Seller Found.');
       }
 
-      if (customer.user.user_type === UserType.Customer) {
-        await this.userService.deactivateUser(customer.user.id);
+      if (seller.user.user_type === UserType.Seller) {
+        await this.userService.deactivateUser(seller.user.id);
 
-        return { message: 'Deactivated customer successfully.' };
+        return { message: 'Deactivated seller successfully.' };
       }
     } catch (e) {
-      if (e.response.message === 'No Customer Found.') {
-        throw new BadRequestException('No Customer Found.');
+      if (e.response.message === 'No Seller Found.') {
+        throw new BadRequestException('No Seller Found.');
       }
       throw new UnauthorizedException();
     }
   }
 
-  @Patch('activate/:customer_id')
-  async activateCustomer(@Param('customer_id') customerId, @Req() request) {
+  @Patch('activate/:seller_id')
+  async activateSeller(@Param('seller_id') sellerId, @Req() request) {
     try {
       const cookie = request.cookies['user_token'];
 
@@ -201,20 +196,20 @@ export class CustomerController {
         throw new UnauthorizedException();
       }
 
-      const customer = await this.customerService.findById(customerId);
+      const seller = await this.sellerService.findById(sellerId);
 
-      if (!customer) {
-        throw new BadRequestException('No Customer Found.');
+      if (!seller) {
+        throw new BadRequestException('No Seller Found.');
       }
 
-      if (customer.user.user_type === UserType.Customer) {
-        await this.userService.activateUser(customer.user.id);
+      if (seller.user.user_type === UserType.Seller) {
+        await this.userService.activateUser(seller.user.id);
 
-        return { message: 'Activated customer successfully.' };
+        return { message: 'Activated seller successfully.' };
       }
     } catch (e) {
-      if (e.response.message === 'No Customer Found.') {
-        throw new BadRequestException('No Customer Found.');
+      if (e.response.message === 'No Seller Found.') {
+        throw new BadRequestException('No Seller Found.');
       }
       throw new UnauthorizedException();
     }

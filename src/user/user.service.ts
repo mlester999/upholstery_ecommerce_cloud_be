@@ -107,6 +107,21 @@ export class UserService {
     return await this.userRepository.save(user);
   }
 
+  async updatePassword(userId: number, newPassword: string): Promise<User> {
+    const user = await this.findById(userId);
+
+    if (!user) {
+      throw new NotFoundException(`User not found`);
+    }
+
+    const salt = await bcrypt.genSalt();
+    const hashedNewPassword = await bcrypt.hash(newPassword, salt);
+
+    user.password = hashedNewPassword;
+
+    return await this.userRepository.save(user);
+  }
+
   /**
    * this function is used to remove or delete user from database.
    * @param id is the type of number, which represent id of user

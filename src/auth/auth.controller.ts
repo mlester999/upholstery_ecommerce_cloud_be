@@ -144,22 +144,97 @@ export class AuthController {
   }
 
   @Post('user')
-  async updateUser(@Body() body: any) {
-    if (Object.keys(body.details).length === 0) return;
+  async updateUser(@Body() body: any, @Req() request) {
+    try {
+      const cookie = request.cookies['user_token'];
 
-    if (body?.details.email) {
-      await this.userService.updateUser(
-        body.details.user_id,
-        body.details.email,
-      );
+      const data = await this.jwtService.verifyAsync(cookie);
+
+      if (!data) {
+        throw new UnauthorizedException();
+      }
+
+      if (Object.keys(body.details).length === 0) return;
+
+      if (body?.details.email) {
+        await this.userService.updateUser(
+          body.details.user_id,
+          body.details.email,
+        );
+      }
+
+      const admin = await this.adminService.findById(body.details.id);
+
+      if (admin.user.user_type === UserType.Admin) {
+        await this.adminService.updateAdmin(body);
+
+        return { message: 'Updated details successfully.' };
+      }
+    } catch (e) {
+      throw new UnauthorizedException();
     }
+  }
 
-    const admin = await this.adminService.findById(body.details.id);
+  @Post('password')
+  async updatePass(@Body() body: any, @Req() request) {
+    try {
+      const cookie = request.cookies['user_token'];
 
-    if (admin.user.user_type === UserType.Admin) {
-      await this.adminService.updateAdmin(body);
+      const data = await this.jwtService.verifyAsync(cookie);
 
-      return { message: 'Updated details successfully.' };
+      if (!data) {
+        throw new UnauthorizedException();
+      }
+
+      if (Object.keys(body.details).length === 0) return;
+
+      const userId = parseInt(data['user_id']);
+
+      const user = await this.userService.findById(userId);
+
+      const salt = await bcrypt.genSalt();
+      const hashedCurrentPassword = await bcrypt.hash(
+        body.details.current_password,
+        salt,
+      );
+
+      if (bcrypt.compareSync(user.password, hashedCurrentPassword)) {
+        if (body.details.new_password === body.details.confirm_new_password) {
+          await this.userService.updatePassword(
+            userId,
+            body.details.new_password,
+          );
+        } else {
+          throw new BadRequestException(
+            'The new password and the confirm new password does not match.',
+          );
+        }
+      } else {
+        throw new BadRequestException(
+          'The current password that you provided is wrong.',
+        );
+      }
+
+      return { message: 'Updated password successfully.' };
+    } catch (e) {
+      console.log(e);
+      if (
+        e.response?.message ===
+        'The new password and the confirm new password does not match.'
+      ) {
+        throw new BadRequestException(
+          'The new password and the confirm new password does not match.',
+        );
+      } else if (
+        e.response?.message ===
+        'The current password that you provided is wrong.'
+      ) {
+        throw new BadRequestException(
+          'The current password that you provided is wrong.',
+        );
+      }
+
+      throw new UnauthorizedException();
     }
   }
 }

@@ -9,8 +9,8 @@ import { Customer } from './entities/customer.entity';
 @Injectable()
 export class CustomerService {
   /**
-   * Here, we have used data mapper approch for this tutorial that is why we
-   * injecting repository here. Another approch can be Active records.
+   * Here, we have used data mapper approach for this tutorial that is why we
+   * injecting repository here. Another approach can be Active records.
    */
   constructor(
     @InjectRepository(Customer)
@@ -29,12 +29,14 @@ export class CustomerService {
   ): Promise<Customer> {
     const customer: Customer = new Customer();
 
+    const originalDate = new Date(createCustomerDto.birth_date);
+
     customer.user = user;
     customer.first_name = createCustomerDto.first_name;
     customer.middle_name = createCustomerDto.middle_name;
     customer.last_name = createCustomerDto.last_name;
     customer.gender = createCustomerDto.gender;
-    customer.birth_date = createCustomerDto.birth_date;
+    customer.birth_date = originalDate;
     customer.contact_number = createCustomerDto.contact_number;
     customer.region = createCustomerDto.region;
     customer.province = createCustomerDto.province;
@@ -120,7 +122,9 @@ export class CustomerService {
     }
 
     if (body.details.birth_date) {
-      customer.birth_date = body.details.birth_date;
+      const originalDate = new Date(body.details.birth_date);
+
+      customer.birth_date = originalDate;
     }
 
     if (body.details.contact_number) {
