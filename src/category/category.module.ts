@@ -7,10 +7,12 @@ import { Category } from './entities/category.entity';
 import { PassportModule } from '@nestjs/passport';
 import { JwtModule } from '@nestjs/jwt';
 import { JwtSecretKeyTMP, JwtStrategy } from 'src/auth/jwt.strategy';
+import { ProductModule } from 'src/product/product.module';
 
 @Module({
   imports: [
     AuthModule,
+    ProductModule,
     TypeOrmModule.forFeature([Category]),
     PassportModule.register({ defaultStrategy: 'jwt', session: false }),
     JwtModule.register({

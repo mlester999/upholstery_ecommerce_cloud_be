@@ -92,7 +92,7 @@ export class CategoryService {
       throw new NotFoundException(`Category not found`);
     }
 
-    category.is_active = 0;
+    category.is_active = ActiveType.NotActive;
 
     return await this.categoryRepository.save(category);
   }
@@ -104,7 +104,7 @@ export class CategoryService {
       throw new NotFoundException(`Category not found`);
     }
 
-    category.is_active = 1;
+    category.is_active = ActiveType.Active;
 
     return await this.categoryRepository.save(category);
   }

@@ -9,10 +9,12 @@ import { JwtSecretKeyTMP, JwtStrategy } from 'src/auth/jwt.strategy';
 import { UserService } from 'src/user/user.service';
 import { JwtModule } from '@nestjs/jwt';
 import { PassportModule } from '@nestjs/passport';
+import { ProductModule } from 'src/product/product.module';
 
 @Module({
   imports: [
     AuthModule,
+    ProductModule,
     TypeOrmModule.forFeature([Seller, User]),
     PassportModule.register({ defaultStrategy: 'jwt', session: false }),
     JwtModule.register({
