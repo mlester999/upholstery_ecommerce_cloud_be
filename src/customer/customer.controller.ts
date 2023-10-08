@@ -59,7 +59,6 @@ export class CustomerController {
 
   @Post('add')
   async addCustomer(@Body() body: any, @Req() request) {
-    console.log(body);
     try {
       const cookie = request.cookies['user_token'];
 
