@@ -15,6 +15,8 @@ import { CategoryModule } from './category/category.module';
 import { Category } from './category/entities/category.entity';
 import { ProductModule } from './product/product.module';
 import { Product } from './product/entities/product.entity';
+import { MulterModule } from '@nestjs/platform-express/multer';
+import { join } from 'path';
 
 @Module({
   imports: [
@@ -28,6 +30,9 @@ import { Product } from './product/entities/product.entity';
       database: 'upholstery-ecommerce',
       synchronize: true,
       logging: true,
+    }),
+    MulterModule.register({
+      dest: join(__dirname, '../../../frontend/public/assets'),
     }),
     UserModule,
     AuthModule,

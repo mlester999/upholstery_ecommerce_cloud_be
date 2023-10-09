@@ -1,11 +1,11 @@
 import { Module } from '@nestjs/common';
 import { ProductService } from './product.service';
 import { ProductController } from './product.controller';
-import { JwtModule, JwtService } from '@nestjs/jwt';
+import { JwtModule } from '@nestjs/jwt';
 import { AuthModule } from 'src/auth/auth.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { PassportModule } from '@nestjs/passport';
-import { JwtSecretKeyTMP } from 'src/auth/jwt.strategy';
+import { JwtSecretKeyTMP, JwtStrategy } from 'src/auth/jwt.strategy';
 import { Category } from 'src/category/entities/category.entity';
 import { Product } from './entities/product.entity';
 import { Seller } from 'src/seller/entities/seller.entity';
@@ -23,6 +23,6 @@ import { SellerService } from 'src/seller/seller.service';
     }),
   ],
   controllers: [ProductController],
-  providers: [ProductService, CategoryService, SellerService, JwtService],
+  providers: [ProductService, CategoryService, SellerService, JwtStrategy],
 })
 export class ProductModule {}

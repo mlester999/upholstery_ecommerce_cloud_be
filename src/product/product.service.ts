@@ -27,16 +27,20 @@ export class ProductService {
    */
   async createProduct(
     createProductDto: CreateProductDto,
+    file: any,
     category: Category,
     seller: Seller,
   ): Promise<Product> {
     const product: Product = new Product();
 
+    const imageFile = `/assets/${file.originalname}`;
+
     product.category = category;
     product.seller = seller;
     product.name = createProductDto.name;
     product.description = createProductDto.description;
-    product.image_file = createProductDto.image_file;
+    product.image_name = file.originalname;
+    product.image_file = imageFile;
     product.price = createProductDto.price;
     product.is_active = ActiveType.Active;
 
@@ -84,6 +88,7 @@ export class ProductService {
    */
   async updateProduct(
     body: any,
+    file: any,
     id: number,
     category: Category,
     seller: Seller,
@@ -95,6 +100,8 @@ export class ProductService {
     if (!product) {
       throw new NotFoundException(`Product not found`);
     }
+
+    const imageFile = `/assets/${file.originalname}`;
 
     if (category) {
       product.category = category;
@@ -113,7 +120,8 @@ export class ProductService {
     }
 
     if (body.details.image_file) {
-      product.image_file = body.details.image_file;
+      product.image_file = imageFile;
+      product.image_name = file.originalname;
     }
 
     if (body.details.price) {

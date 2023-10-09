@@ -31,6 +31,9 @@ export class Product {
   description: string;
 
   @Column({ type: 'text' })
+  image_name: string;
+
+  @Column({ type: 'text' })
   image_file: string;
 
   @Column({ type: 'int' })

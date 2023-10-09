@@ -1,3 +1,4 @@
+import { Express } from 'express';
 import {
   Body,
   Controller,
@@ -6,15 +7,20 @@ import {
   Patch,
   Post,
   Req,
+  UploadedFile,
   UnauthorizedException,
+  UseInterceptors,
 } from '@nestjs/common';
 import { BadRequestException } from '@nestjs/common/exceptions';
 import { JwtService } from '@nestjs/jwt';
+import { FileInterceptor } from '@nestjs/platform-express';
 import { CategoryService } from 'src/category/category.service';
 import { SellerService } from 'src/seller/seller.service';
 import { ProductService } from './product.service';
+import { diskStorage } from 'multer';
+import { join } from 'path';
 
-@Controller('category')
+@Controller('product')
 export class ProductController {
   constructor(
     private readonly productService: ProductService,
@@ -34,7 +40,7 @@ export class ProductController {
         throw new UnauthorizedException();
       }
 
-      return this.productService.findAllProduct();
+      return await this.productService.findAllProduct();
     } catch (e) {
       throw new UnauthorizedException();
     }
@@ -58,7 +64,25 @@ export class ProductController {
   }
 
   @Post('add')
-  async addProduct(@Body() body: any, @Req() request) {
+  @UseInterceptors(
+    FileInterceptor('image_file', {
+      storage: diskStorage({
+        destination: (req, file, cb) => {
+          // Set the destination path to your public/assets folder
+          const uploadPath = join(__dirname, '../../../frontend/public/assets');
+          cb(null, uploadPath);
+        },
+        filename: (req, file, cb) => {
+          cb(null, `${file.originalname}`);
+        },
+      }),
+    }),
+  )
+  async addProduct(
+    @Body() body: any,
+    @Req() request,
+    @UploadedFile() file: Express.Multer.File,
+  ) {
     try {
       const cookie = request.cookies['user_token'];
 
@@ -68,15 +92,15 @@ export class ProductController {
         throw new UnauthorizedException();
       }
 
-      if (Object.keys(body.details).length === 0) return;
+      const details = JSON.parse(body.details);
 
-      const category = await this.categoryService.findById(
-        body.details.category_id,
-      );
+      if (Object.keys(details).length <= 1) return;
 
-      const seller = await this.sellerService.findById(body.details.seller_id);
+      const category = await this.categoryService.findById(details.category_id);
 
-      await this.productService.createProduct(body.details, category, seller);
+      const seller = await this.sellerService.findById(details.seller_id);
+
+      await this.productService.createProduct(details, file, category, seller);
 
       return { message: 'Created Product Successfully.' };
     } catch (e) {
@@ -85,10 +109,25 @@ export class ProductController {
   }
 
   @Patch('update/:product_id')
+  @UseInterceptors(
+    FileInterceptor('image_file', {
+      storage: diskStorage({
+        destination: (req, file, cb) => {
+          // Set the destination path to your public/assets folder
+          const uploadPath = join(__dirname, '../../../frontend/public/assets');
+          cb(null, uploadPath);
+        },
+        filename: (req, file, cb) => {
+          cb(null, `${file.originalname}`);
+        },
+      }),
+    }),
+  )
   async updateProduct(
     @Body() body: any,
     @Param('product_id') productId,
     @Req() request,
+    @UploadedFile() file: Express.Multer.File,
   ) {
     try {
       const cookie = request.cookies['user_token'];
@@ -130,6 +169,7 @@ export class ProductController {
 
       await this.productService.updateProduct(
         body,
+        file,
         parseInt(productId),
         category,
         seller,

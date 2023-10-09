@@ -23,6 +23,10 @@ export class CreateProductDto {
 
   @IsString()
   @IsNotEmpty()
+  image_name: string;
+
+  @IsString()
+  @IsNotEmpty()
   image_file: string;
 
   @IsNumber()
