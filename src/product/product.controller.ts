@@ -1,3 +1,4 @@
+import * as fs from 'fs';
 import { Express } from 'express';
 import {
   Body,
@@ -88,7 +89,13 @@ export class ProductController {
 
       const data = await this.jwtService.verifyAsync(cookie);
 
+      const newFileToRemove = join(
+        __dirname,
+        `../../../frontend/public/assets/${file.filename}`,
+      );
+
       if (!data) {
+        fs.unlinkSync(newFileToRemove);
         throw new UnauthorizedException();
       }
 
@@ -98,7 +105,17 @@ export class ProductController {
 
       const category = await this.categoryService.findById(details.category_id);
 
+      if (!category) {
+        fs.unlinkSync(newFileToRemove);
+        throw new BadRequestException('No Category Found.');
+      }
+
       const seller = await this.sellerService.findById(details.seller_id);
+
+      if (!seller) {
+        fs.unlinkSync(newFileToRemove);
+        throw new BadRequestException('No Seller Found.');
+      }
 
       await this.productService.createProduct(details, file, category, seller);
 
@@ -134,7 +151,13 @@ export class ProductController {
 
       const data = await this.jwtService.verifyAsync(cookie);
 
+      const newFileToRemove = join(
+        __dirname,
+        `../../../frontend/public/assets/${file.filename}`,
+      );
+
       if (!data) {
+        fs.unlinkSync(newFileToRemove);
         throw new UnauthorizedException();
       }
 
@@ -149,6 +172,7 @@ export class ProductController {
         category = await this.categoryService.findById(details.category_id);
 
         if (!category) {
+          fs.unlinkSync(newFileToRemove);
           throw new BadRequestException('No Category Found.');
         }
       }
@@ -157,6 +181,7 @@ export class ProductController {
         seller = await this.sellerService.findById(details.seller_id);
 
         if (!seller) {
+          fs.unlinkSync(newFileToRemove);
           throw new BadRequestException('No Seller Found.');
         }
       }
@@ -164,6 +189,7 @@ export class ProductController {
       const product = await this.productService.findById(productId);
 
       if (!product) {
+        fs.unlinkSync(newFileToRemove);
         throw new BadRequestException('No Product Found.');
       }
 
@@ -174,6 +200,13 @@ export class ProductController {
         category,
         seller,
       );
+
+      const existingFileToRemove = join(
+        __dirname,
+        `../../../frontend/public/assets/${product.image_name}`,
+      );
+
+      fs.unlinkSync(existingFileToRemove);
 
       return { message: 'Updated product details successfully.' };
     } catch (e) {
