@@ -87,7 +87,7 @@ export class ProductService {
    * @returns promise of update product
    */
   async updateProduct(
-    body: any,
+    details: any,
     file: any,
     id: number,
     category: Category,
@@ -111,21 +111,21 @@ export class ProductService {
       product.seller = seller;
     }
 
-    if (body.details.name) {
-      product.name = body.details.name;
+    if (details.name) {
+      product.name = details.name;
     }
 
-    if (body.details.description) {
-      product.description = body.details.description;
+    if (details.description) {
+      product.description = details.description;
     }
 
-    if (body.details.image_file) {
+    if (details.image_file) {
       product.image_file = imageFile;
       product.image_name = file.originalname;
     }
 
-    if (body.details.price) {
-      product.price = body.details.price;
+    if (details.price) {
+      product.price = details.price;
     }
 
     return await this.productRepository.save(product);

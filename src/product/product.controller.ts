@@ -138,23 +138,23 @@ export class ProductController {
         throw new UnauthorizedException();
       }
 
-      if (Object.keys(body.details).length === 0) return;
+      const details = JSON.parse(body.details);
+
+      if (Object.keys(details).length <= 1) return;
 
       let category;
       let seller;
 
-      if (body.details.category_id) {
-        category = await this.categoryService.findById(
-          body.details.category_id,
-        );
+      if (details.category_id) {
+        category = await this.categoryService.findById(details.category_id);
 
         if (!category) {
           throw new BadRequestException('No Category Found.');
         }
       }
 
-      if (body.details.seller_id) {
-        seller = await this.sellerService.findById(body.details.seller_id);
+      if (details.seller_id) {
+        seller = await this.sellerService.findById(details.seller_id);
 
         if (!seller) {
           throw new BadRequestException('No Seller Found.');
@@ -168,7 +168,7 @@ export class ProductController {
       }
 
       await this.productService.updateProduct(
-        body,
+        details,
         file,
         parseInt(productId),
         category,
