@@ -19,7 +19,7 @@ import { CategoryService } from 'src/category/category.service';
 import { SellerService } from 'src/seller/seller.service';
 import { ProductService } from './product.service';
 import { diskStorage } from 'multer';
-import { join } from 'path';
+import * as path from 'path';
 
 @Controller('product')
 export class ProductController {
@@ -70,7 +70,7 @@ export class ProductController {
       storage: diskStorage({
         destination: (req, file, cb) => {
           // Set the destination path to your public/assets folder
-          const uploadPath = join(__dirname, '../../../frontend/public/assets');
+          const uploadPath = path.resolve('../frontend/public/assets');
           cb(null, uploadPath);
         },
         filename: (req, file, cb) => {
@@ -89,9 +89,8 @@ export class ProductController {
 
       const data = await this.jwtService.verifyAsync(cookie);
 
-      const newFileToRemove = join(
-        __dirname,
-        `../../../frontend/public/assets/${file.filename}`,
+      const newFileToRemove = path.resolve(
+        `../frontend/public/assets/${file.filename}`,
       );
 
       if (!data) {
@@ -131,7 +130,7 @@ export class ProductController {
       storage: diskStorage({
         destination: (req, file, cb) => {
           // Set the destination path to your public/assets folder
-          const uploadPath = join(__dirname, '../../../frontend/public/assets');
+          const uploadPath = path.resolve('../frontend/public/assets');
           cb(null, uploadPath);
         },
         filename: (req, file, cb) => {
@@ -151,13 +150,19 @@ export class ProductController {
 
       const data = await this.jwtService.verifyAsync(cookie);
 
-      const newFileToRemove = join(
-        __dirname,
-        `../../../frontend/public/assets/${file.filename}`,
-      );
+      let newFileToRemove;
+
+      if (file?.filename) {
+        newFileToRemove = path.resolve(
+          `../frontend/public/assets/${file.filename}`,
+        );
+      }
 
       if (!data) {
-        fs.unlinkSync(newFileToRemove);
+        if (file?.filename) {
+          fs.unlinkSync(newFileToRemove);
+        }
+
         throw new UnauthorizedException();
       }
 
@@ -201,12 +206,13 @@ export class ProductController {
         seller,
       );
 
-      const existingFileToRemove = join(
-        __dirname,
-        `../../../frontend/public/assets/${product.image_name}`,
-      );
+      if (file) {
+        const existingFileToRemove = path.resolve(
+          `../frontend/public/assets/${product.image_name}`,
+        );
 
-      fs.unlinkSync(existingFileToRemove);
+        fs.unlinkSync(existingFileToRemove);
+      }
 
       return { message: 'Updated product details successfully.' };
     } catch (e) {

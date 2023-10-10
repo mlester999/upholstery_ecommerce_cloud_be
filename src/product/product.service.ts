@@ -101,7 +101,7 @@ export class ProductService {
       throw new NotFoundException(`Product not found`);
     }
 
-    const imageFile = `/assets/${file.originalname}`;
+    const imageFile = `/assets/${file?.originalname}`;
 
     if (category) {
       product.category = category;
