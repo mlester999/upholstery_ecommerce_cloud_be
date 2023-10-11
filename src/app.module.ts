@@ -11,6 +11,14 @@ import { CustomerModule } from './customer/customer.module';
 import { Customer } from './customer/entities/customer.entity';
 import { SellerModule } from './seller/seller.module';
 import { Seller } from './seller/entities/seller.entity';
+import { CategoryModule } from './category/category.module';
+import { Category } from './category/entities/category.entity';
+import { ProductModule } from './product/product.module';
+import { Product } from './product/entities/product.entity';
+import { MulterModule } from '@nestjs/platform-express/multer';
+import { join } from 'path';
+import { OrderModule } from './order/order.module';
+import { Order } from './order/entities/order.entity';
 
 @Module({
   imports: [
@@ -20,16 +28,22 @@ import { Seller } from './seller/entities/seller.entity';
       port: 5432,
       username: 'postgres',
       password: 'tw0t0w3rs',
-      entities: [User, Admin, Customer, Seller],
+      entities: [User, Admin, Customer, Seller, Category, Product, Order],
       database: 'upholstery-ecommerce',
       synchronize: true,
       logging: true,
+    }),
+    MulterModule.register({
+      dest: join(__dirname, '../../../frontend/public/assets'),
     }),
     UserModule,
     AuthModule,
     AdminModule,
     CustomerModule,
     SellerModule,
+    CategoryModule,
+    ProductModule,
+    OrderModule,
   ],
   controllers: [AppController],
   providers: [AppService],
