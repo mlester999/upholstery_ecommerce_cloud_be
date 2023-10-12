@@ -1,6 +1,6 @@
 import { Customer } from 'src/customer/entities/customer.entity';
 import { Product } from 'src/product/entities/product.entity';
-import { Seller } from 'src/seller/entities/seller.entity';
+import { Shop } from 'src/shop/entities/shop.entity';
 import { ActiveType } from 'src/user/entities/user.entity';
 import {
   Column,
@@ -32,9 +32,9 @@ export class Order {
   @JoinColumn()
   customer: Customer;
 
-  @ManyToOne(() => Seller)
+  @ManyToOne(() => Shop)
   @JoinColumn()
-  seller: Seller;
+  shop: Shop;
 
   @ManyToOne(() => Product)
   @JoinColumn()

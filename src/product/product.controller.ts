@@ -16,7 +16,7 @@ import { BadRequestException } from '@nestjs/common/exceptions';
 import { JwtService } from '@nestjs/jwt';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { CategoryService } from 'src/category/category.service';
-import { SellerService } from 'src/seller/seller.service';
+import { ShopService } from 'src/shop/shop.service';
 import { ProductService } from './product.service';
 import { diskStorage } from 'multer';
 import * as path from 'path';
@@ -26,7 +26,7 @@ export class ProductController {
   constructor(
     private readonly productService: ProductService,
     private readonly categoryService: CategoryService,
-    private readonly sellerService: SellerService,
+    private readonly shopService: ShopService,
     private readonly jwtService: JwtService,
   ) {}
 
@@ -109,14 +109,14 @@ export class ProductController {
         throw new BadRequestException('No Category Found.');
       }
 
-      const seller = await this.sellerService.findById(details.seller_id);
+      const shop = await this.shopService.findById(details.shop_id);
 
-      if (!seller) {
+      if (!shop) {
         fs.unlinkSync(newFileToRemove);
-        throw new BadRequestException('No Seller Found.');
+        throw new BadRequestException('No Shop Found.');
       }
 
-      await this.productService.createProduct(details, file, category, seller);
+      await this.productService.createProduct(details, file, category, shop);
 
       return { message: 'Created Product Successfully.' };
     } catch (e) {
@@ -171,7 +171,7 @@ export class ProductController {
       if (Object.keys(details).length <= 1) return;
 
       let category;
-      let seller;
+      let shop;
 
       if (details.category_id) {
         category = await this.categoryService.findById(details.category_id);
@@ -182,12 +182,12 @@ export class ProductController {
         }
       }
 
-      if (details.seller_id) {
-        seller = await this.sellerService.findById(details.seller_id);
+      if (details.shop_id) {
+        shop = await this.shopService.findById(details.shop_id);
 
-        if (!seller) {
+        if (!shop) {
           fs.unlinkSync(newFileToRemove);
-          throw new BadRequestException('No Seller Found.');
+          throw new BadRequestException('No Shop Found.');
         }
       }
 
@@ -203,7 +203,7 @@ export class ProductController {
         file,
         parseInt(productId),
         category,
-        seller,
+        shop,
       );
 
       if (file) {

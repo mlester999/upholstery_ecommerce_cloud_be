@@ -1,6 +1,4 @@
-import { Category } from 'src/category/entities/category.entity';
 import { Seller } from 'src/seller/entities/seller.entity';
-import { Shop } from 'src/shop/entities/shop.entity';
 import { ActiveType } from 'src/user/entities/user.entity';
 import {
   Column,
@@ -8,37 +6,25 @@ import {
   CreateDateColumn,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
+  OneToOne,
   JoinColumn,
-  ManyToOne,
 } from 'typeorm';
 
 @Entity()
-export class Product {
+export class Shop {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @ManyToOne(() => Category)
-  @JoinColumn()
-  category: Category;
-
-  @ManyToOne(() => Shop)
-  @JoinColumn()
-  shop: Shop;
+  // Define the one-to-one relationship with Seller
+  @OneToOne(() => Seller)
+  @JoinColumn() // Specify the name of the foreign key column in Seller
+  seller: Seller; // Create a property to access the related Seller entity
 
   @Column({ type: 'varchar', length: 100 })
   name: string;
 
   @Column({ type: 'text' })
   description: string;
-
-  @Column({ type: 'text' })
-  image_name: string;
-
-  @Column({ type: 'text' })
-  image_file: string;
-
-  @Column({ type: 'int' })
-  price: number;
 
   @Column({ type: 'enum', enum: ActiveType })
   is_active: number;

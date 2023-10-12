@@ -1,7 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Category } from 'src/category/entities/category.entity';
-import { Seller } from 'src/seller/entities/seller.entity';
+import { Shop } from 'src/shop/entities/shop.entity';
 import { ActiveType } from 'src/user/entities/user.entity';
 import { Repository } from 'typeorm';
 import { CreateProductDto } from './dto/create-product.dto';
@@ -23,20 +23,20 @@ export class ProductService {
    * this is function is used to create Product in Product Entity.
    * @param createProductDto this will type of createProductDto in which
    * we have defined what are the keys we are expecting from body
-   * @returns promise of seller
+   * @returns promise of shop
    */
   async createProduct(
     createProductDto: CreateProductDto,
     file: any,
     category: Category,
-    seller: Seller,
+    shop: Shop,
   ): Promise<Product> {
     const product: Product = new Product();
 
     const imageFile = `/assets/${file.originalname}`;
 
     product.category = category;
-    product.seller = seller;
+    product.shop = shop;
     product.name = createProductDto.name;
     product.description = createProductDto.description;
     product.image_name = file.originalname;
@@ -55,7 +55,7 @@ export class ProductService {
     return this.productRepository.find({
       relations: {
         category: true,
-        seller: true,
+        shop: true,
       },
     });
   }
@@ -65,7 +65,7 @@ export class ProductService {
       where: { id },
       relations: {
         category: true,
-        seller: true,
+        shop: true,
       },
     });
   }
@@ -91,7 +91,7 @@ export class ProductService {
     file: any,
     id: number,
     category: Category,
-    seller: Seller,
+    shop: Shop,
   ): Promise<Product> {
     const product = await this.productRepository.findOneBy({
       id,
@@ -107,8 +107,8 @@ export class ProductService {
       product.category = category;
     }
 
-    if (seller) {
-      product.seller = seller;
+    if (shop) {
+      product.shop = shop;
     }
 
     if (details.name) {

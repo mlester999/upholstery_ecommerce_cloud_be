@@ -12,15 +12,15 @@ import { BadRequestException } from '@nestjs/common/exceptions';
 import { JwtService } from '@nestjs/jwt';
 import { CustomerService } from 'src/customer/customer.service';
 import { ProductService } from 'src/product/product.service';
-import { SellerService } from 'src/seller/seller.service';
+import { ShopService } from 'src/shop/shop.service';
 import { OrderService } from './order.service';
 
-@Controller('Order')
+@Controller('order')
 export class OrderController {
   constructor(
     private readonly orderService: OrderService,
     private readonly customerService: CustomerService,
-    private readonly sellerService: SellerService,
+    private readonly shopService: ShopService,
     private readonly productService: ProductService,
     private readonly jwtService: JwtService,
   ) {}
@@ -80,10 +80,10 @@ export class OrderController {
         throw new BadRequestException('No Customer Found.');
       }
 
-      const seller = await this.sellerService.findById(body.details.seller_id);
+      const shop = await this.shopService.findById(body.details.shop_id);
 
-      if (!seller) {
-        throw new BadRequestException('No Seller Found.');
+      if (!shop) {
+        throw new BadRequestException('No Shop Found.');
       }
 
       const product = await this.productService.findById(
@@ -97,7 +97,7 @@ export class OrderController {
       await this.orderService.createOrder(
         body.details,
         customer,
-        seller,
+        shop,
         product,
       );
 
@@ -125,7 +125,7 @@ export class OrderController {
       if (Object.keys(body.details).length <= 1) return;
 
       let customer;
-      let seller;
+      let shop;
       let product;
 
       if (body.details.customer_id) {
@@ -138,11 +138,11 @@ export class OrderController {
         }
       }
 
-      if (body.details.seller_id) {
-        seller = await this.sellerService.findById(body.details.seller_id);
+      if (body.details.shop_id) {
+        shop = await this.shopService.findById(body.details.shop_id);
 
-        if (!seller) {
-          throw new BadRequestException('No Seller Found.');
+        if (!shop) {
+          throw new BadRequestException('No Shop Found.');
         }
       }
 
@@ -164,7 +164,7 @@ export class OrderController {
         body.details,
         parseInt(orderId),
         customer,
-        seller,
+        shop,
         product,
       );
 
@@ -203,7 +203,7 @@ export class OrderController {
   }
 
   @Patch('activate/:order_id')
-  async activateCategory(@Param('order_id') orderId, @Req() request) {
+  async activateOrder(@Param('order_id') orderId, @Req() request) {
     try {
       const cookie = request.cookies['user_token'];
 

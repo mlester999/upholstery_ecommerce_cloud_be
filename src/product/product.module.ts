@@ -8,14 +8,14 @@ import { PassportModule } from '@nestjs/passport';
 import { JwtSecretKeyTMP, JwtStrategy } from 'src/auth/jwt.strategy';
 import { Category } from 'src/category/entities/category.entity';
 import { Product } from './entities/product.entity';
-import { Seller } from 'src/seller/entities/seller.entity';
 import { CategoryService } from 'src/category/category.service';
-import { SellerService } from 'src/seller/seller.service';
+import { ShopService } from 'src/shop/shop.service';
+import { Shop } from 'src/shop/entities/shop.entity';
 
 @Module({
   imports: [
     AuthModule,
-    TypeOrmModule.forFeature([Product, Category, Seller]),
+    TypeOrmModule.forFeature([Product, Category, Shop]),
     PassportModule.register({ defaultStrategy: 'jwt', session: false }),
     JwtModule.register({
       secret: JwtSecretKeyTMP,
@@ -23,6 +23,6 @@ import { SellerService } from 'src/seller/seller.service';
     }),
   ],
   controllers: [ProductController],
-  providers: [ProductService, CategoryService, SellerService, JwtStrategy],
+  providers: [ProductService, CategoryService, ShopService, JwtStrategy],
 })
 export class ProductModule {}

@@ -10,11 +10,13 @@ import { UserService } from 'src/user/user.service';
 import { JwtModule } from '@nestjs/jwt';
 import { PassportModule } from '@nestjs/passport';
 import { ProductModule } from 'src/product/product.module';
+import { ShopModule } from 'src/shop/shop.module';
 
 @Module({
   imports: [
     AuthModule,
     ProductModule,
+    ShopModule,
     TypeOrmModule.forFeature([Seller, User]),
     PassportModule.register({ defaultStrategy: 'jwt', session: false }),
     JwtModule.register({

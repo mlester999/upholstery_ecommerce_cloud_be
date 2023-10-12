@@ -7,7 +7,7 @@ import { CreateOrderDto } from './dto/create-order.dto';
 import { UpdateOrderDto } from './dto/update-order.dto';
 import { DeliveryStatusType, Order } from './entities/order.entity';
 import { Customer } from 'src/customer/entities/customer.entity';
-import { Seller } from 'src/seller/entities/seller.entity';
+import { Shop } from 'src/shop/entities/shop.entity';
 import { Product } from 'src/product/entities/product.entity';
 
 @Injectable()
@@ -30,13 +30,13 @@ export class OrderService {
   async createOrder(
     createOrderDto: CreateOrderDto,
     customer: Customer,
-    seller: Seller,
+    shop: Shop,
     product: Product,
   ): Promise<Order> {
     const order: Order = new Order();
 
     order.customer = customer;
-    order.seller = seller;
+    order.shop = shop;
     order.product = product;
     order.order_id = randomUuid(14, 'ALPHANUM');
     order.status = DeliveryStatusType.Processing;
@@ -53,7 +53,7 @@ export class OrderService {
     return this.orderRepository.find({
       relations: {
         customer: true,
-        seller: true,
+        shop: true,
         product: true,
       },
     });
@@ -64,7 +64,7 @@ export class OrderService {
       where: { id },
       relations: {
         customer: true,
-        seller: true,
+        shop: true,
         product: true,
       },
     });
@@ -90,7 +90,7 @@ export class OrderService {
     details: any,
     id: number,
     customer: Customer,
-    seller: Seller,
+    shop: Shop,
     product: Product,
   ): Promise<Order> {
     const order = await this.orderRepository.findOneBy({
@@ -105,8 +105,8 @@ export class OrderService {
       order.customer = customer;
     }
 
-    if (seller) {
-      order.seller = seller;
+    if (shop) {
+      order.shop = shop;
     }
 
     if (product) {
