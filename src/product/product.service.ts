@@ -28,19 +28,18 @@ export class ProductService {
   async createProduct(
     createProductDto: CreateProductDto,
     file: any,
+    url: any,
     category: Category,
     shop: Shop,
   ): Promise<Product> {
     const product: Product = new Product();
-
-    const imageFile = `/assets/${file.originalname}`;
 
     product.category = category;
     product.shop = shop;
     product.name = createProductDto.name;
     product.description = createProductDto.description;
     product.image_name = file.originalname;
-    product.image_file = imageFile;
+    product.image_file = url;
     product.price = createProductDto.price;
     product.is_active = ActiveType.Active;
 

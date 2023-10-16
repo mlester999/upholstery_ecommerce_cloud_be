@@ -94,9 +94,9 @@ export class CustomerService {
    * @param updateUserDto this is partial type of createUserDto.
    * @returns promise of udpate user
    */
-  async updateCustomer(body: any, id: number): Promise<Customer> {
+  async updateCustomer(body: any): Promise<Customer> {
     const customer = await this.customerRepository.findOneBy({
-      id,
+      id: body.details.id,
     });
 
     if (!customer) {

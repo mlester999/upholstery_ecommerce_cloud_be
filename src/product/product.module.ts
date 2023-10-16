@@ -11,6 +11,8 @@ import { Product } from './entities/product.entity';
 import { CategoryService } from 'src/category/category.service';
 import { ShopService } from 'src/shop/shop.service';
 import { Shop } from 'src/shop/entities/shop.entity';
+import { DoSpacesServiceProvider } from 'src/spaces-module/spaces-service';
+import { DoSpacesService } from 'src/spaces-module/spaces-service/doSpacesService';
 
 @Module({
   imports: [
@@ -23,6 +25,13 @@ import { Shop } from 'src/shop/entities/shop.entity';
     }),
   ],
   controllers: [ProductController],
-  providers: [ProductService, CategoryService, ShopService, JwtStrategy],
+  providers: [
+    ProductService,
+    CategoryService,
+    ShopService,
+    DoSpacesServiceProvider,
+    DoSpacesService,
+    JwtStrategy,
+  ],
 })
 export class ProductModule {}

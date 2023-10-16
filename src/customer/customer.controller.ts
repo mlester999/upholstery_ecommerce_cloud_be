@@ -142,7 +142,7 @@ export class CustomerController {
       const customer = await this.customerService.findById(body.details.id);
 
       if (customer.user.user_type === UserType.Customer) {
-        await this.customerService.updateCustomer(body, parseInt(customerId));
+        await this.customerService.updateCustomer(body);
 
         return { message: 'Updated customer details successfully.' };
       }

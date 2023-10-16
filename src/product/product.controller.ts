@@ -18,8 +18,10 @@ import { FileInterceptor } from '@nestjs/platform-express';
 import { CategoryService } from 'src/category/category.service';
 import { ShopService } from 'src/shop/shop.service';
 import { ProductService } from './product.service';
+import { DoSpacesService } from 'src/spaces-module/spaces-service/doSpacesService';
 import { diskStorage } from 'multer';
 import * as path from 'path';
+import { UploadedMulterFileI } from 'src/spaces-module/spaces-service';
 
 @Controller('product')
 export class ProductController {
@@ -28,6 +30,7 @@ export class ProductController {
     private readonly categoryService: CategoryService,
     private readonly shopService: ShopService,
     private readonly jwtService: JwtService,
+    private readonly doSpacesService: DoSpacesService,
   ) {}
 
   @Get('all')
@@ -65,36 +68,18 @@ export class ProductController {
   }
 
   @Post('add')
-  @UseInterceptors(
-    FileInterceptor('image_file', {
-      storage: diskStorage({
-        destination: (req, file, cb) => {
-          // Set the destination path to your public/assets folder
-          const uploadPath = path.resolve('../frontend/public/assets');
-          cb(null, uploadPath);
-        },
-        filename: (req, file, cb) => {
-          cb(null, `${file.originalname}`);
-        },
-      }),
-    }),
-  )
+  @UseInterceptors(FileInterceptor('image_file'))
   async addProduct(
     @Body() body: any,
     @Req() request,
-    @UploadedFile() file: Express.Multer.File,
+    @UploadedFile() file: UploadedMulterFileI,
   ) {
     try {
       const cookie = request.cookies['user_token'];
 
       const data = await this.jwtService.verifyAsync(cookie);
 
-      const newFileToRemove = path.resolve(
-        `../frontend/public/assets/${file.filename}`,
-      );
-
       if (!data) {
-        fs.unlinkSync(newFileToRemove);
         throw new UnauthorizedException();
       }
 
@@ -105,22 +90,35 @@ export class ProductController {
       const category = await this.categoryService.findById(details.category_id);
 
       if (!category) {
-        fs.unlinkSync(newFileToRemove);
         throw new BadRequestException('No Category Found.');
       }
 
       const shop = await this.shopService.findById(details.shop_id);
 
       if (!shop) {
-        fs.unlinkSync(newFileToRemove);
         throw new BadRequestException('No Shop Found.');
       }
 
-      await this.productService.createProduct(details, file, category, shop);
+      const url = await this.doSpacesService.uploadFile(file);
+
+      await this.productService.createProduct(
+        details,
+        file,
+        url,
+        category,
+        shop,
+      );
 
       return { message: 'Created Product Successfully.' };
     } catch (e) {
-      throw new UnauthorizedException();
+      console.log(e);
+      if (e.response?.message === 'No Category Found.') {
+        throw new BadRequestException('No Category Found.');
+      } else if (e.response?.message === 'No Shop Found.') {
+        throw new BadRequestException('No Shop Found.');
+      } else {
+        throw new UnauthorizedException();
+      }
     }
   }
 
