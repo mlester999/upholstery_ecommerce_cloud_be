@@ -27,8 +27,7 @@ export class ProductService {
    */
   async createProduct(
     createProductDto: CreateProductDto,
-    file: any,
-    url: any,
+    uploadedUrl: any,
     category: Category,
     shop: Shop,
   ): Promise<Product> {
@@ -38,8 +37,8 @@ export class ProductService {
     product.shop = shop;
     product.name = createProductDto.name;
     product.description = createProductDto.description;
-    product.image_name = file.originalname;
-    product.image_file = url;
+    product.image_name = uploadedUrl.fileName;
+    product.image_file = uploadedUrl.url;
     product.price = createProductDto.price;
     product.is_active = ActiveType.Active;
 
@@ -87,7 +86,7 @@ export class ProductService {
    */
   async updateProduct(
     details: any,
-    file: any,
+    uploadedUrl: any,
     id: number,
     category: Category,
     shop: Shop,
@@ -100,14 +99,17 @@ export class ProductService {
       throw new NotFoundException(`Product not found`);
     }
 
-    const imageFile = `/assets/${file?.originalname}`;
-
     if (category) {
       product.category = category;
     }
 
     if (shop) {
       product.shop = shop;
+
+      if (!details.image_file) {
+        product.image_file = uploadedUrl.url;
+        product.image_name = uploadedUrl.fileName;
+      }
     }
 
     if (details.name) {
@@ -119,8 +121,8 @@ export class ProductService {
     }
 
     if (details.image_file) {
-      product.image_file = imageFile;
-      product.image_name = file.originalname;
+      product.image_file = uploadedUrl.url;
+      product.image_name = uploadedUrl.fileName;
     }
 
     if (details.price) {

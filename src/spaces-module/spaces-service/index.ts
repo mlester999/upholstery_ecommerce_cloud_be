@@ -6,13 +6,13 @@ export const DoSpacesServiceLib = 'lib:do-spaces-service';
 
 // Creation of the value that the provider will always be returning.
 // An actual AWS.S3 instance
-const spacesEndpoint = new AWS.Endpoint('https://sgp1.digitaloceanspaces.com');
+const spacesEndpoint = new AWS.Endpoint('sgp1.digitaloceanspaces.com');
 
 const S3 = new AWS.S3({
   endpoint: spacesEndpoint.href,
   credentials: new AWS.Credentials({
-    accessKeyId: 'DO0029ZWEK7Y9R82UADN',
-    secretAccessKey: 'gnb02xcsqhP7UYQH/q8uTedFt+2FfpQ2/9KfiTuTVvc',
+    accessKeyId: 'DO00CTWMBGZ66RG7C2E8',
+    secretAccessKey: '67DH8ZXa4kK8FOovZYuXz6yE7bW8uidJBezLEtLhJkA',
   }),
 });
 
