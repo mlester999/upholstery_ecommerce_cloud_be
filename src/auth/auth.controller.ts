@@ -113,7 +113,7 @@ export class AuthController {
     @Body('password') password: string,
     @Res({ passthrough: true }) res,
   ) {
-    const admin = await this.adminService.findByEmail(email);
+    const admin = await this.adminService.findByEmailAuth(email);
 
     if (!admin) {
       throw new BadRequestException(
@@ -183,7 +183,10 @@ export class AuthController {
 
       const user = await this.userService.findById(parseInt(data['user_id']));
 
-      if (user.user_type === UserType.Admin) {
+      if (
+        user.user_type === UserType.Admin ||
+        user.user_type === UserType.SuperAdmin
+      ) {
         res.clearCookie('user_token', {
           httpOnly: true,
           sameSite: 'none',
@@ -243,9 +246,12 @@ export class AuthController {
 
       const user = await this.userService.findById(parseInt(data['user_id']));
 
-      const admin = await this.adminService.findById(parseInt(data['id']));
+      const admin = await this.adminService.findByIdAuth(parseInt(data['id']));
 
-      if (admin.user.user_type === UserType.Admin) {
+      if (
+        admin.user.user_type === UserType.Admin ||
+        admin.user.user_type === UserType.SuperAdmin
+      ) {
         const { password, ...result } = user;
 
         return {
@@ -316,7 +322,10 @@ export class AuthController {
 
       const admin = await this.adminService.findById(body.details.id);
 
-      if (admin.user.user_type === UserType.Admin) {
+      if (
+        admin.user.user_type === UserType.Admin ||
+        admin.user.user_type === UserType.SuperAdmin
+      ) {
         await this.adminService.updateAdmin(body);
 
         return { message: 'Updated details successfully.' };
@@ -426,7 +435,10 @@ export class AuthController {
 
       const user = await this.userService.findById(userId);
 
-      if (user.user_type === UserType.Admin) {
+      if (
+        user.user_type === UserType.Admin ||
+        user.user_type === UserType.SuperAdmin
+      ) {
         const comparePass = await bcrypt.compare(
           body.details.current_password,
           user.password,

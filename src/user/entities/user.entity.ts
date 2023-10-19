@@ -10,6 +10,7 @@ export enum UserType {
   Customer = 0,
   Seller = 1,
   Admin = 2,
+  SuperAdmin = 3,
 }
 
 export enum ActiveType {

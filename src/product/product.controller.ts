@@ -50,6 +50,11 @@ export class ProductController {
     }
   }
 
+  @Get('latest-products')
+  async findAllLatestProducts() {
+    return await this.productService.findLatestProducts();
+  }
+
   @Get(':product_id')
   async findOne(@Req() request, @Param('product_id') productId) {
     try {
@@ -175,7 +180,7 @@ export class ProductController {
 
       if (details.image_file) {
         await this.doSpacesService.removeFile(
-          `${product.shop.id}/products/${product.image_name}`,
+          `products/${product.shop.id}/${product.image_name}`,
         );
 
         if (details.shop_id) {

@@ -43,6 +43,14 @@ export class CategoryService {
     return this.categoryRepository.find();
   }
 
+  async findAllSortedCategory(): Promise<Category[]> {
+    return this.categoryRepository.find({
+      order: {
+        title: 'ASC',
+      },
+    });
+  }
+
   async findById(id: number): Promise<Category | undefined> {
     return this.categoryRepository.findOne({
       where: { id },

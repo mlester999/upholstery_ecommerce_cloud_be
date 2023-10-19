@@ -58,6 +58,19 @@ export class ProductService {
     });
   }
 
+  async findLatestProducts(): Promise<Product[]> {
+    return this.productRepository.find({
+      relations: {
+        category: true,
+        shop: true,
+      },
+      order: {
+        created_at: 'DESC', // Replace 'dateField' with the actual field you want to sort by
+      },
+      take: 8,
+    });
+  }
+
   async findById(id: number): Promise<Product | undefined> {
     return this.productRepository.findOne({
       where: { id },
