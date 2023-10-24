@@ -105,6 +105,52 @@ export class CustomerController {
     }
   }
 
+  @Post('new')
+  async newCustomer(@Body() body: any, @Req() request) {
+    try {
+      if (Object.keys(body.details).length === 0) return;
+
+      const customer = await this.customerService.findByEmail(
+        body?.details.email,
+      );
+
+      if (customer) {
+        throw new BadRequestException(
+          'The email address that you provided is already taken.',
+        );
+      }
+
+      if (body.details.password !== body.details.confirm_password) {
+        throw new BadRequestException(
+          'The password that you provided does not match.',
+        );
+      }
+
+      const newUser = await this.userService.createNewUser(
+        body.details,
+        UserType.Customer,
+      );
+
+      if (!newUser) {
+        throw new BadRequestException('Failed creating a user.');
+      }
+
+      await this.customerService.createCustomer(body.details, newUser);
+
+      return { message: 'Created Customer Successfully.' };
+    } catch (e) {
+      if (
+        e.response.message ===
+        'The email address that you provided is already taken.'
+      ) {
+        throw new BadRequestException(
+          'The email address that you provided is already taken.',
+        );
+      }
+      throw new UnauthorizedException();
+    }
+  }
+
   @Patch('update/:customer_id')
   async updateCustomer(
     @Body() body: any,
