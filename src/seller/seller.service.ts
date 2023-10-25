@@ -94,9 +94,9 @@ export class SellerService {
    * @param updateUserDto this is partial type of createUserDto.
    * @returns promise of update user
    */
-  async updateSeller(body: any, id: number): Promise<Seller> {
+  async updateSeller(body: any): Promise<Seller> {
     const seller = await this.sellerRepository.findOneBy({
-      id,
+      id: body.details.id,
     });
 
     if (!seller) {
