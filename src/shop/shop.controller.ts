@@ -55,6 +55,23 @@ export class ShopController {
     }
   }
 
+  @Get('/slug/:shop_slug')
+  async findOneBySlug(@Req() request, @Param('shop_slug') shopSlug) {
+    try {
+      const cookie = request.cookies['user_token'];
+
+      const data = await this.jwtService.verifyAsync(cookie);
+
+      if (!data) {
+        throw new UnauthorizedException();
+      }
+
+      return this.shopService.findBySlug(shopSlug);
+    } catch (e) {
+      throw new UnauthorizedException();
+    }
+  }
+
   @Post('add')
   async addShop(@Body() body: any, @Req() request) {
     try {

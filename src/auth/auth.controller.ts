@@ -280,17 +280,19 @@ export class AuthController {
 
       const user = await this.userService.findById(parseInt(data['user_id']));
 
-      const customer = await this.customerService.findById(
-        parseInt(data['id']),
-      );
+      if (user.user_type == 0) {
+        const customer = await this.customerService.findById(
+          parseInt(data['id']),
+        );
 
-      if (customer.user.user_type === UserType.Customer) {
-        const { password, ...result } = user;
+        if (customer.user.user_type === UserType.Customer) {
+          const { password, ...result } = user;
 
-        return {
-          user: result,
-          ...customer,
-        };
+          return {
+            user: result,
+            ...customer,
+          };
+        }
       }
     } catch (e) {
       throw new UnauthorizedException();
@@ -311,15 +313,17 @@ export class AuthController {
 
       const user = await this.userService.findById(parseInt(data['user_id']));
 
-      const seller = await this.sellerService.findById(parseInt(data['id']));
+      if (user.user_type == 1) {
+        const seller = await this.sellerService.findById(parseInt(data['id']));
 
-      if (seller.user.user_type === UserType.Seller) {
-        const { password, ...result } = user;
+        if (seller.user.user_type === UserType.Seller) {
+          const { password, ...result } = user;
 
-        return {
-          user: result,
-          ...seller,
-        };
+          return {
+            user: result,
+            ...seller,
+          };
+        }
       }
     } catch (e) {
       throw new UnauthorizedException();
@@ -340,18 +344,22 @@ export class AuthController {
 
       const user = await this.userService.findById(parseInt(data['user_id']));
 
-      const admin = await this.adminService.findByIdAuth(parseInt(data['id']));
+      if (user.user_type == 2 || user.user_type == 3) {
+        const admin = await this.adminService.findByIdAuth(
+          parseInt(data['id']),
+        );
 
-      if (
-        admin.user.user_type === UserType.Admin ||
-        admin.user.user_type === UserType.SuperAdmin
-      ) {
-        const { password, ...result } = user;
+        if (
+          admin.user.user_type === UserType.Admin ||
+          admin.user.user_type === UserType.SuperAdmin
+        ) {
+          const { password, ...result } = user;
 
-        return {
-          user: result,
-          ...admin,
-        };
+          return {
+            user: result,
+            ...admin,
+          };
+        }
       }
     } catch (e) {
       throw new UnauthorizedException();

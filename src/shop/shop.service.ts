@@ -59,12 +59,22 @@ export class ShopService {
     });
   }
 
+  async findBySlug(slug: string): Promise<Shop | undefined> {
+    return this.shopRepository.findOne({
+      where: { name: slug },
+      relations: {
+        seller: true,
+      },
+    });
+  }
+
   async findBySellerId(id: number): Promise<Shop | undefined> {
     return this.shopRepository.findOne({
       where: {
         seller: {
           id,
         },
+        is_active: 1,
       },
       relations: {
         seller: true,
