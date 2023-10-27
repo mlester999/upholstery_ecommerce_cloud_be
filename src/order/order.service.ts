@@ -53,7 +53,9 @@ export class OrderService {
     return this.orderRepository.find({
       relations: {
         customer: true,
-        shop: true,
+        shop: {
+          seller: true,
+        },
         product: true,
       },
     });

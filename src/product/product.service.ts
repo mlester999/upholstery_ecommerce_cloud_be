@@ -53,7 +53,9 @@ export class ProductService {
     return this.productRepository.find({
       relations: {
         category: true,
-        shop: true,
+        shop: {
+          seller: true
+        },
       },
     });
   }
