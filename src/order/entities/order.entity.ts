@@ -40,6 +40,9 @@ export class Order {
   @JoinColumn()
   product: Product;
 
+  @Column({ type: 'int', nullable: true })
+  quantity: number;
+
   @Column({
     type: 'enum',
     enum: ['Processing', 'Packed', 'Shipped', 'Out For Delivery', 'Delivered'],

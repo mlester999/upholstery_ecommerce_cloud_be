@@ -28,6 +28,9 @@ export class Product {
   @Column({ type: 'varchar', length: 100 })
   name: string;
 
+  @Column({ type: 'varchar', length: 100, nullable: true })
+  slug: string;
+
   @Column({ type: 'text' })
   description: string;
 
@@ -39,6 +42,9 @@ export class Product {
 
   @Column({ type: 'int' })
   price: number;
+
+  @Column({ type: 'int', nullable: true })
+  quantity: number;
 
   @Column({ type: 'enum', enum: ActiveType })
   is_active: number;

@@ -40,7 +40,19 @@ export class ProductService {
     product.image_name = uploadedUrl.fileName;
     product.image_file = uploadedUrl.url;
     product.price = createProductDto.price;
+    product.quantity = createProductDto.quantity;
     product.is_active = ActiveType.Active;
+
+    // Convert the title to lowercase
+    const lowercaseTitle = product.name.toLowerCase();
+
+    // Replace special characters with empty strings using a regular expression
+    const withoutSpecialChars = lowercaseTitle.replace(/[^\w\s-]/g, '');
+
+    // Replace spaces with hyphens
+    const productSlug = withoutSpecialChars.replace(/\s+/g, '-');
+
+    product.slug = productSlug;
 
     return this.productRepository.save(product);
   }
@@ -54,7 +66,7 @@ export class ProductService {
       relations: {
         category: true,
         shop: {
-          seller: true
+          seller: true,
         },
       },
     });
@@ -83,6 +95,16 @@ export class ProductService {
     });
   }
 
+  async findBySlug(slug: string): Promise<Product | undefined> {
+    return this.productRepository.findOne({
+      where: { slug },
+      relations: {
+        category: true,
+        shop: true,
+      },
+    });
+  }
+
   /**
    * this function used to get data of use whose id is passed in parameter
    * @param id is type of number, which represent the id of user.
@@ -90,6 +112,25 @@ export class ProductService {
    */
   async viewProduct(id: number): Promise<Product> {
     return this.productRepository.findOneBy({ id });
+  }
+
+  async decreaseProductQuantity(
+    id: number,
+    quantity: number,
+  ): Promise<Product> {
+    const product = await this.productRepository.findOneBy({
+      id,
+    });
+
+    if (!product) {
+      throw new NotFoundException(`Product not found`);
+    }
+
+    if (quantity) {
+      product.quantity = product.quantity - quantity;
+    }
+
+    return await this.productRepository.save(product);
   }
 
   /**
@@ -129,6 +170,17 @@ export class ProductService {
 
     if (details.name) {
       product.name = details.name;
+
+      // Convert the title to lowercase
+      const lowercaseTitle = product.name.toLowerCase();
+
+      // Replace special characters with empty strings using a regular expression
+      const withoutSpecialChars = lowercaseTitle.replace(/[^\w\s-]/g, '');
+
+      // Replace spaces with hyphens
+      const productSlug = withoutSpecialChars.replace(/\s+/g, '-');
+
+      product.slug = productSlug;
     }
 
     if (details.description) {
@@ -142,6 +194,10 @@ export class ProductService {
 
     if (details.price) {
       product.price = details.price;
+    }
+
+    if (details.quantity) {
+      product.quantity = details.quantity;
     }
 
     return await this.productRepository.save(product);

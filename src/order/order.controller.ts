@@ -101,6 +101,11 @@ export class OrderController {
         product,
       );
 
+      await this.productService.decreaseProductQuantity(
+        body.details.product_id,
+        body.details.quantity,
+      );
+
       return { message: 'Created Order Successfully.' };
     } catch (e) {
       throw new UnauthorizedException();

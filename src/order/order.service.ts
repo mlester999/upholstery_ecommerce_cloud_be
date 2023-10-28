@@ -39,6 +39,7 @@ export class OrderService {
     order.shop = shop;
     order.product = product;
     order.order_id = randomUuid(14, 'ALPHANUM');
+    order.quantity = createOrderDto.quantity;
     order.status = DeliveryStatusType.Processing;
     order.is_active = ActiveType.Active;
 
@@ -113,6 +114,10 @@ export class OrderService {
 
     if (product) {
       order.product = product;
+    }
+
+    if (details.quantity) {
+      order.quantity = details.quantity;
     }
 
     if (details.status) {

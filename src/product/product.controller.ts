@@ -72,6 +72,23 @@ export class ProductController {
     }
   }
 
+  @Get('/slug/:productSlug')
+  async findOneByOrderId(@Req() request, @Param('productSlug') productSlug) {
+    try {
+      const cookie = request.cookies['user_token'];
+
+      const data = await this.jwtService.verifyAsync(cookie);
+
+      if (!data) {
+        throw new UnauthorizedException();
+      }
+
+      return this.productService.findBySlug(productSlug);
+    } catch (e) {
+      throw new UnauthorizedException();
+    }
+  }
+
   @Post('add')
   @UseInterceptors(FileInterceptor('image_file'))
   async addProduct(

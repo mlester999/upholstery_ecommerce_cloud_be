@@ -12,6 +12,10 @@ export class CreateOrderDto {
   @IsNotEmpty()
   order_id: string;
 
+  @IsOptional()
+  @IsNumber()
+  quantity: number;
+
   @IsString()
   @IsEnum(['Processing', 'Packed', 'Shipped', 'Out For Delivery', 'Delivered'])
   status: string;
