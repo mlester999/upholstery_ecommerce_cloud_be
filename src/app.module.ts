@@ -23,6 +23,7 @@ import { VoucherModule } from './voucher/voucher.module';
 import { Voucher } from './voucher/entities/voucher.entity';
 import { ShopModule } from './shop/shop.module';
 import { Shop } from './shop/entities/shop.entity';
+import { PaymongoModule } from './paymongo/paymongo.module';
 
 @Module({
   imports: [
@@ -60,6 +61,7 @@ import { Shop } from './shop/entities/shop.entity';
     OrderModule,
     VoucherModule,
     ShopModule,
+    PaymongoModule,
   ],
   controllers: [AppController],
   providers: [AppService],

@@ -2,6 +2,8 @@ import {
   Body,
   Controller,
   Get,
+  HttpCode,
+  HttpStatus,
   Param,
   Patch,
   Post,
@@ -14,6 +16,7 @@ import { CustomerService } from 'src/customer/customer.service';
 import { ProductService } from 'src/product/product.service';
 import { ShopService } from 'src/shop/shop.service';
 import { OrderService } from './order.service';
+import * as Paymongo from 'paymongo';
 
 @Controller('order')
 export class OrderController {
@@ -56,6 +59,72 @@ export class OrderController {
       return this.orderService.findById(parseInt(orderId));
     } catch (e) {
       throw new UnauthorizedException();
+    }
+  }
+
+  @Post('show-payment-page')
+  async showPaymentPage(@Body() body: any) {
+    const paymongo = new Paymongo(process.env.SECRET_KEY);
+
+    let productDescription = 'Payment for ';
+
+    // Loop through the array and build the description
+    body.details.product_list.forEach((product, index) => {
+      productDescription += `${product.quantity} pc${
+        product.quantity > 1 ? 's' : ''
+      } of ${product.name}`;
+      if (index < body.details.product_list.length - 1) {
+        productDescription += ', ';
+      }
+    });
+
+    const paymentData = {
+      data: {
+        attributes: {
+          amount: Number(body.details.subtotal_price) * 100,
+          description: productDescription,
+          remarks: 'For testings lang',
+        },
+      },
+    };
+
+    // const webhookData = {
+    //   data: {
+    //     attributes: {
+    //       url: 'https://de47-136-158-78-172.ngrok-free.app/api/paymongo-webhook',
+    //       events: [
+    //         'source.chargeable',
+    //         'payment.failed',
+    //         'payment.paid',
+    //         'link.payment.paid',
+    //       ],
+    //     },
+    //   },
+    // };
+
+    const linksResult = await paymongo.links.create(paymentData);
+
+    // const createWebHooksResult = await paymongo.webhooks.create(webhookData);
+
+    return linksResult;
+  }
+
+  @Post('finishedPayment')
+  @HttpCode(HttpStatus.OK)
+  async finishedPayment(@Req() req) {
+    if (req.method === 'POST') {
+      try {
+        const body = req.body;
+        console.log('=== Webhook triggered ===');
+        console.log(body.data);
+        console.log('=== Webhook end ===');
+        return { message: 'Webhook Received' };
+      } catch (error) {
+        console.error('Error handling webhook:', error);
+        return { message: 'Internal Server Error' };
+      }
+    } else {
+      return { message: 'Method Not Allowed' };
     }
   }
 
