@@ -1,4 +1,3 @@
-import { randomUuid } from '../../utils/generateUuid';
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { ActiveType } from 'src/user/entities/user.entity';
@@ -32,14 +31,16 @@ export class OrderService {
     customer: Customer,
     shop: Shop,
     product: Product,
+    randomOrderId: string,
+    quantity: number,
   ): Promise<Order> {
     const order: Order = new Order();
 
     order.customer = customer;
     order.shop = shop;
     order.product = product;
-    order.order_id = randomUuid(14, 'ALPHANUM');
-    order.quantity = createOrderDto.quantity;
+    order.order_id = randomOrderId;
+    order.quantity = quantity;
     order.status = DeliveryStatusType.Processing;
     order.is_active = ActiveType.Active;
 

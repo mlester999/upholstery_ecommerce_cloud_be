@@ -17,6 +17,7 @@ import { ProductService } from 'src/product/product.service';
 import { ShopService } from 'src/shop/shop.service';
 import { OrderService } from './order.service';
 import * as Paymongo from 'paymongo';
+import { randomUuid } from '../../utils/generateUuid';
 
 @Controller('order')
 export class OrderController {
@@ -109,25 +110,6 @@ export class OrderController {
     return linksResult;
   }
 
-  @Post('finishedPayment')
-  @HttpCode(HttpStatus.OK)
-  async finishedPayment(@Req() req) {
-    if (req.method === 'POST') {
-      try {
-        const body = req.body;
-        console.log('=== Webhook triggered ===');
-        console.log(body.data);
-        console.log('=== Webhook end ===');
-        return { message: 'Webhook Received' };
-      } catch (error) {
-        console.error('Error handling webhook:', error);
-        return { message: 'Internal Server Error' };
-      }
-    } else {
-      return { message: 'Method Not Allowed' };
-    }
-  }
-
   @Post('add')
   async addOrder(@Body() body: any, @Req() request) {
     try {
@@ -163,17 +145,75 @@ export class OrderController {
         throw new BadRequestException('No Product Found.');
       }
 
+      const randomOrderId = randomUuid(14, 'ALPHANUM');
+
       await this.orderService.createOrder(
         body.details,
         customer,
         shop,
         product,
+        randomOrderId,
+        body.details.quantity,
       );
 
       await this.productService.decreaseProductQuantity(
         body.details.product_id,
         body.details.quantity,
       );
+
+      return { message: 'Created Order Successfully.' };
+    } catch (e) {
+      throw new UnauthorizedException();
+    }
+  }
+
+  @Post('customer-order')
+  async customerOrder(@Body() body: any, @Req() request) {
+    try {
+      const cookie = request.cookies['user_token'];
+
+      const data = await this.jwtService.verifyAsync(cookie);
+
+      if (!data) {
+        throw new UnauthorizedException();
+      }
+
+      if (Object.keys(body.details).length === 0) return;
+
+      const customer = await this.customerService.findById(
+        body.details.customer_id,
+      );
+
+      if (!customer) {
+        throw new BadRequestException('No Customer Found.');
+      }
+
+      const randomOrderId = randomUuid(14, 'ALPHANUM');
+
+      for (const el of body.details.product_list) {
+        const shop = await this.shopService.findById(el.shop.id);
+
+        if (!shop) {
+          throw new BadRequestException('No Shop Found.');
+        }
+
+        const product = await this.productService.findById(el.id);
+
+        if (!product) {
+          throw new BadRequestException('No Product Found.');
+        }
+
+        await this.orderService.createOrder(
+          body.details,
+          customer,
+          shop,
+          el,
+          randomOrderId,
+          el.quantity,
+        );
+
+        await this.productService.decreaseProductQuantity(el.id, el.quantity);
+      }
 
       return { message: 'Created Order Successfully.' };
     } catch (e) {
