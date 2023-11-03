@@ -20,10 +20,19 @@ export enum DeliveryStatusType {
   Delivered = 'Delivered',
 }
 
+export enum PaymentMethodType {
+  CashOnDelivery = 'Cash on Delivery',
+  GCash = 'GCash',
+  GrabPay = 'Grab Pay',
+}
+
 @Entity()
 export class Order {
   @PrimaryGeneratedColumn()
   id: number;
+
+  @Column({ type: 'varchar', length: 100, nullable: true })
+  source_id: string;
 
   @Column({ type: 'varchar', length: 15 })
   order_id: string;
@@ -55,6 +64,18 @@ export class Order {
    * Delivered - Delivered
    */
   status: string;
+
+  @Column({
+    type: 'enum',
+    enum: ['Cash on Delivery', 'GCash', 'Grab Pay'],
+    nullable: true,
+  })
+  /**
+   * Cash on Delivery - Cash on Delivery
+   * GCash - GCash
+   * Grab Pay - Grab Pay
+   */
+  payment_method: string;
 
   @Column({ type: 'enum', enum: ActiveType })
   is_active: number;

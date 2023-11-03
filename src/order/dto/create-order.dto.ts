@@ -12,6 +12,10 @@ export class CreateOrderDto {
   @IsNotEmpty()
   order_id: string;
 
+  @IsString()
+  @IsOptional()
+  source_id: string;
+
   @IsOptional()
   @IsNumber()
   quantity: number;
@@ -19,6 +23,11 @@ export class CreateOrderDto {
   @IsString()
   @IsEnum(['Processing', 'Packed', 'Shipped', 'Out For Delivery', 'Delivered'])
   status: string;
+
+  @IsString()
+  @IsOptional()
+  @IsEnum(['Cash on Delivery', 'GCash', 'Grab Pay'])
+  payment_method: string;
 
   @IsOptional()
   @IsNumber()

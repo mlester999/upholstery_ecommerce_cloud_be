@@ -53,6 +53,12 @@ export class VoucherService {
     });
   }
 
+  async findByName(voucherName: string): Promise<Voucher | undefined> {
+    return this.voucherRepository.findOne({
+      where: { voucher_code: voucherName },
+    });
+  }
+
   /**
    * this function used to get data of use whose id is passed in parameter
    * @param id is type of number, which represent the id of voucher.

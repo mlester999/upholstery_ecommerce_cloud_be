@@ -43,6 +43,11 @@ export class OrderService {
     order.quantity = quantity;
     order.status = DeliveryStatusType.Processing;
     order.is_active = ActiveType.Active;
+    order.payment_method = createOrderDto.payment_method;
+
+    if (createOrderDto.source_id) {
+      order.source_id = createOrderDto.source_id;
+    }
 
     return this.orderRepository.save(order);
   }
@@ -123,6 +128,14 @@ export class OrderService {
 
     if (details.status) {
       order.status = details.status;
+    }
+
+    if (details.source_id) {
+      order.source_id = details.source_id;
+    }
+
+    if (details.payment_method) {
+      order.payment_method = details.payment_method;
     }
 
     return await this.orderRepository.save(order);

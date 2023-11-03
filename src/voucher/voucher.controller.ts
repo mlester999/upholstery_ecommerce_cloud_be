@@ -53,7 +53,30 @@ export class VoucherController {
     }
   }
 
-  @Post('add')
+  @Post(':voucher_name')
+  async findOneByName(@Req() request, @Param('voucher_name') voucherName) {
+    try {
+      const cookie = request.cookies['user_token'];
+
+      const data = await this.jwtService.verifyAsync(cookie);
+
+      if (!data) {
+        throw new UnauthorizedException();
+      }
+
+      const voucherCode = this.voucherService.findByName(voucherName);
+
+      if (voucherCode) {
+        return voucherCode;
+      } else {
+        return { message: 'Invalid Voucher Code' };
+      }
+    } catch (e) {
+      throw new UnauthorizedException();
+    }
+  }
+
+  @Post('add/new')
   async addVoucher(@Body() body: any, @Req() request) {
     try {
       const cookie = request.cookies['user_token'];
