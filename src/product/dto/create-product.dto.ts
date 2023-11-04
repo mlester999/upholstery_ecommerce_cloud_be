@@ -14,9 +14,9 @@ export class CreateProductDto {
   @IsNotEmpty()
   name: string;
 
-  @IsOptional()
   @IsString()
   @MinLength(2, { message: 'Product Slug must have atleast 2 characters.' })
+  @IsNotEmpty()
   slug: string;
 
   @IsString()
@@ -38,8 +38,8 @@ export class CreateProductDto {
   @IsNotEmpty()
   price: number;
 
-  @IsOptional()
   @IsNumber()
+  @IsNotEmpty()
   quantity: number;
 
   @IsOptional()

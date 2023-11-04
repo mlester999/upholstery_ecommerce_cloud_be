@@ -18,6 +18,7 @@ import { ShopService } from 'src/shop/shop.service';
 import { OrderService } from './order.service';
 import * as Paymongo from 'paymongo';
 import { randomUuid } from '../../utils/generateUuid';
+import { ActiveType } from 'src/user/entities/user.entity';
 
 @Controller('order')
 export class OrderController {
@@ -131,34 +132,55 @@ export class OrderController {
         throw new BadRequestException('No Customer Found.');
       }
 
-      const shop = await this.shopService.findById(body.details.shop_id);
+      let totalPrice = 0;
+      let totalQuantity = 0;
 
-      if (!shop) {
-        throw new BadRequestException('No Shop Found.');
-      }
+      const orderedProducts = await Promise.all(
+        body.details.products.map(async (el, index) => {
+          const product = await this.productService.findById(Number(el));
 
-      const product = await this.productService.findById(
-        body.details.product_id,
+          if (!product) {
+            throw new BadRequestException('No Product Found.');
+          }
+
+          const orderedProduct = {
+            ...product,
+            quantity: body.details.quantity[index],
+            status: 'Processing',
+          };
+
+          totalPrice += orderedProduct.price;
+          totalQuantity += orderedProduct.quantity;
+
+          await this.productService.decreaseProductQuantity(
+            Number(el),
+            body.details.quantity[index],
+          );
+
+          return orderedProduct;
+        }),
       );
 
-      if (!product) {
-        throw new BadRequestException('No Product Found.');
+      if (orderedProducts.length === 0) {
+        throw new BadRequestException('No Products Found.');
       }
 
       const randomOrderId = randomUuid(14, 'ALPHANUM');
 
-      await this.orderService.createOrder(
-        body.details,
-        customer,
-        shop,
-        product,
-        randomOrderId,
-        body.details.quantity,
-      );
+      const orderDetails = {
+        order_id: randomOrderId,
+        source_id: null,
+        payment_method: 'Cash on Delivery',
+        total_quantity: totalQuantity,
+        subtotal_price: totalPrice,
+        is_active: ActiveType.Active,
+      };
 
-      await this.productService.decreaseProductQuantity(
-        body.details.product_id,
-        body.details.quantity,
+      await this.orderService.createOrder(
+        orderDetails,
+        customer,
+        JSON.stringify(orderedProducts),
+        randomOrderId,
       );
 
       return { message: 'Created Order Successfully.' };
@@ -190,33 +212,25 @@ export class OrderController {
 
       const randomOrderId = randomUuid(14, 'ALPHANUM');
 
+      const products = [];
+
       for (const el of body.details.product_list) {
-        const shop = await this.shopService.findById(el.shop.id);
-
-        if (!shop) {
-          throw new BadRequestException('No Shop Found.');
-        }
-
-        const product = await this.productService.findById(el.id);
-
-        if (!product) {
-          throw new BadRequestException('No Product Found.');
-        }
-
-        await this.orderService.createOrder(
-          body.details,
-          customer,
-          shop,
-          el,
-          randomOrderId,
-          el.quantity,
-        );
-
+        el.status = 'Processing';
         await this.productService.decreaseProductQuantity(el.id, el.quantity);
+
+        products.push(el);
       }
+
+      await this.orderService.createOrder(
+        body.details,
+        customer,
+        JSON.stringify(products),
+        randomOrderId,
+      );
 
       return { message: 'Created Order Successfully.' };
     } catch (e) {
+      console.log(e);
       throw new UnauthorizedException();
     }
   }
@@ -239,7 +253,6 @@ export class OrderController {
       if (Object.keys(body.details).length <= 1) return;
 
       let customer;
-      let shop;
       let product;
 
       if (body.details.customer_id) {
@@ -249,14 +262,6 @@ export class OrderController {
 
         if (!customer) {
           throw new BadRequestException('No Customer Found.');
-        }
-      }
-
-      if (body.details.shop_id) {
-        shop = await this.shopService.findById(body.details.shop_id);
-
-        if (!shop) {
-          throw new BadRequestException('No Shop Found.');
         }
       }
 
@@ -278,7 +283,6 @@ export class OrderController {
         body.details,
         parseInt(orderId),
         customer,
-        shop,
         product,
       );
 

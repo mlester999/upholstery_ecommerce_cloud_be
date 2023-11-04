@@ -16,18 +16,21 @@ export class CreateOrderDto {
   @IsOptional()
   source_id: string;
 
-  @IsOptional()
-  @IsNumber()
-  quantity: number;
+  // @IsString()
+  // @IsEnum(['Processing', 'Packed', 'Shipped', 'Out For Delivery', 'Delivered'])
+  // status: string;
 
   @IsString()
-  @IsEnum(['Processing', 'Packed', 'Shipped', 'Out For Delivery', 'Delivered'])
-  status: string;
-
-  @IsString()
-  @IsOptional()
   @IsEnum(['Cash on Delivery', 'GCash', 'Grab Pay'])
   payment_method: string;
+
+  @IsNumber()
+  @IsNotEmpty()
+  total_quantity: number;
+
+  @IsNumber()
+  @IsNotEmpty()
+  subtotal_price: number;
 
   @IsOptional()
   @IsNumber()

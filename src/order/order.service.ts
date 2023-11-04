@@ -6,7 +6,6 @@ import { CreateOrderDto } from './dto/create-order.dto';
 import { UpdateOrderDto } from './dto/update-order.dto';
 import { DeliveryStatusType, Order } from './entities/order.entity';
 import { Customer } from 'src/customer/entities/customer.entity';
-import { Shop } from 'src/shop/entities/shop.entity';
 import { Product } from 'src/product/entities/product.entity';
 
 @Injectable()
@@ -29,21 +28,18 @@ export class OrderService {
   async createOrder(
     createOrderDto: CreateOrderDto,
     customer: Customer,
-    shop: Shop,
-    product: Product,
+    products: any,
     randomOrderId: string,
-    quantity: number,
   ): Promise<Order> {
     const order: Order = new Order();
 
     order.customer = customer;
-    order.shop = shop;
-    order.product = product;
+    order.products = products;
     order.order_id = randomOrderId;
-    order.quantity = quantity;
-    order.status = DeliveryStatusType.Processing;
     order.is_active = ActiveType.Active;
     order.payment_method = createOrderDto.payment_method;
+    order.subtotal_price = createOrderDto.subtotal_price;
+    order.total_quantity = createOrderDto.total_quantity;
 
     if (createOrderDto.source_id) {
       order.source_id = createOrderDto.source_id;
@@ -60,10 +56,6 @@ export class OrderService {
     return this.orderRepository.find({
       relations: {
         customer: true,
-        shop: {
-          seller: true,
-        },
-        product: true,
       },
     });
   }
@@ -73,8 +65,6 @@ export class OrderService {
       where: { id },
       relations: {
         customer: true,
-        shop: true,
-        product: true,
       },
     });
   }
@@ -99,8 +89,7 @@ export class OrderService {
     details: any,
     id: number,
     customer: Customer,
-    shop: Shop,
-    product: Product,
+    products: Product[],
   ): Promise<Order> {
     const order = await this.orderRepository.findOneBy({
       id,
@@ -114,20 +103,8 @@ export class OrderService {
       order.customer = customer;
     }
 
-    if (shop) {
-      order.shop = shop;
-    }
-
-    if (product) {
-      order.product = product;
-    }
-
-    if (details.quantity) {
-      order.quantity = details.quantity;
-    }
-
-    if (details.status) {
-      order.status = details.status;
+    if (products) {
+      order.products = products;
     }
 
     if (details.source_id) {

@@ -28,7 +28,7 @@ export class Product {
   @Column({ type: 'varchar', length: 100 })
   name: string;
 
-  @Column({ type: 'varchar', length: 100, nullable: true })
+  @Column({ type: 'varchar', length: 100 })
   slug: string;
 
   @Column({ type: 'text' })
@@ -43,7 +43,7 @@ export class Product {
   @Column({ type: 'int' })
   price: number;
 
-  @Column({ type: 'int', nullable: true })
+  @Column({ type: 'int' })
   quantity: number;
 
   @Column({ type: 'enum', enum: ActiveType })

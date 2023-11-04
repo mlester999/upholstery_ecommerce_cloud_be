@@ -41,34 +41,26 @@ export class Order {
   @JoinColumn()
   customer: Customer;
 
-  @ManyToOne(() => Shop)
-  @JoinColumn()
-  shop: Shop;
+  // Create an array to hold multiple products
+  @Column('jsonb', { nullable: true })
+  products?: object[];
 
-  @ManyToOne(() => Product)
-  @JoinColumn()
-  product: Product;
-
-  @Column({ type: 'int', nullable: true })
-  quantity: number;
-
-  @Column({
-    type: 'enum',
-    enum: ['Processing', 'Packed', 'Shipped', 'Out For Delivery', 'Delivered'],
-  })
-  /**
-   * Processing - Processing
-   * Packed - Packed
-   * Shipped - Shipped
-   * Out For Delivery - Out For Delivery
-   * Delivered - Delivered
-   */
-  status: string;
+  // @Column({
+  //   type: 'enum',
+  //   enum: ['Processing', 'Packed', 'Shipped', 'Out For Delivery', 'Delivered'],
+  // })
+  // /**
+  //  * Processing - Processing
+  //  * Packed - Packed
+  //  * Shipped - Shipped
+  //  * Out For Delivery - Out For Delivery
+  //  * Delivered - Delivered
+  //  */
+  // status: string;
 
   @Column({
     type: 'enum',
     enum: ['Cash on Delivery', 'GCash', 'Grab Pay'],
-    nullable: true,
   })
   /**
    * Cash on Delivery - Cash on Delivery
@@ -76,6 +68,12 @@ export class Order {
    * Grab Pay - Grab Pay
    */
   payment_method: string;
+
+  @Column({ type: 'int' })
+  total_quantity: number;
+
+  @Column({ type: 'int' })
+  subtotal_price: number;
 
   @Column({ type: 'enum', enum: ActiveType })
   is_active: number;
