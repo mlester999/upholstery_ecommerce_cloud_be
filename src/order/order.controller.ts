@@ -145,7 +145,8 @@ export class OrderController {
 
           const orderedProduct = {
             ...product,
-            quantity: body.details.quantity[index],
+            price: product.price * Number(body.details.quantity[index]),
+            quantity: Number(body.details.quantity[index]),
             status: 'Processing',
           };
 
@@ -252,39 +253,134 @@ export class OrderController {
 
       if (Object.keys(body.details).length <= 1) return;
 
-      let customer;
-      let product;
+      if (body.details.products) {
+        const order = await this.orderService.findById(orderId);
 
-      if (body.details.customer_id) {
-        customer = await this.customerService.findById(
-          body.details.customer_id,
+        if (!order) {
+          throw new BadRequestException('No Order Found.');
+        }
+
+        const orderedProducts = await Promise.all(
+          JSON.parse(order.products).map(async (product, index) => {
+            const originalProduct = await this.productService.findById(
+              Number(body.details.products[index]),
+            );
+
+            if (!originalProduct) {
+              throw new BadRequestException('No Product Found.');
+            }
+
+            const orderedProduct = {
+              ...originalProduct,
+              price: originalProduct.price * product.quantity,
+              quantity: product.quantity,
+              status: product.status,
+            };
+
+            return orderedProduct;
+          }),
         );
 
-        if (!customer) {
-          throw new BadRequestException('No Customer Found.');
+        if (orderedProducts.length === 0) {
+          throw new BadRequestException('No Products Found.');
         }
+
+        const orderDetails = {
+          products: orderedProducts,
+        };
+
+        await this.orderService.updateOrder(orderDetails, parseInt(orderId));
       }
 
-      if (body.details.product_id) {
-        product = await this.productService.findById(body.details.product_id);
+      if (body.details.quantity) {
+        let totalPrice = 0;
+        let totalQuantity = 0;
 
-        if (!product) {
-          throw new BadRequestException('No Product Found.');
+        const order = await this.orderService.findById(orderId);
+
+        if (!order) {
+          throw new BadRequestException('No Order Found.');
         }
+
+        const orderedProducts = await Promise.all(
+          JSON.parse(order.products).map(async (product, index) => {
+            const originalProduct = await this.productService.findById(
+              Number(product.id),
+            );
+            const orderedQuantity = Number(body.details.quantity[index]);
+
+            if (orderedQuantity < product.quantity) {
+              const newQuantity = product.quantity - orderedQuantity;
+
+              await this.productService.increaseProductQuantity(
+                Number(product.id),
+                newQuantity,
+              );
+            }
+
+            if (orderedQuantity > product.quantity) {
+              const newQuantity = orderedQuantity - product.quantity;
+
+              await this.productService.decreaseProductQuantity(
+                Number(product.id),
+                newQuantity,
+              );
+            }
+
+            const productQuantity = {
+              ...product,
+              price: originalProduct.price * orderedQuantity,
+              quantity: orderedQuantity,
+            };
+
+            totalPrice += productQuantity.price;
+            totalQuantity += productQuantity.quantity;
+
+            return productQuantity;
+          }),
+        );
+
+        if (orderedProducts.length === 0) {
+          throw new BadRequestException('No Products Found.');
+        }
+
+        const orderDetails = {
+          products: orderedProducts,
+          total_quantity: totalQuantity,
+          subtotal_price: totalPrice,
+        };
+
+        await this.orderService.updateOrder(orderDetails, parseInt(orderId));
       }
 
-      const order = await this.orderService.findById(orderId);
+      if (body.details.status) {
+        const order = await this.orderService.findById(orderId);
 
-      if (!order) {
-        throw new BadRequestException('No Order Found.');
+        if (!order) {
+          throw new BadRequestException('No Order Found.');
+        }
+
+        const orderedProducts = await Promise.all(
+          JSON.parse(order.products).map(async (product, index) => {
+            const productStatus = {
+              ...product,
+              status: body.details.status[index],
+            };
+
+            return productStatus;
+          }),
+        );
+
+        if (orderedProducts.length === 0) {
+          throw new BadRequestException('No Products Found.');
+        }
+
+        const orderDetails = {
+          products: orderedProducts,
+        };
+
+        await this.orderService.updateOrder(orderDetails, parseInt(orderId));
       }
-
-      await this.orderService.updateOrder(
-        body.details,
-        parseInt(orderId),
-        customer,
-        product,
-      );
 
       return { message: 'Updated order details successfully.' };
     } catch (e) {

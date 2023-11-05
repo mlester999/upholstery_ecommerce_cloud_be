@@ -114,6 +114,25 @@ export class ProductService {
     return this.productRepository.findOneBy({ id });
   }
 
+  async increaseProductQuantity(
+    id: number,
+    quantity: number,
+  ): Promise<Product> {
+    const product = await this.productRepository.findOneBy({
+      id,
+    });
+
+    if (!product) {
+      throw new NotFoundException(`Product not found`);
+    }
+
+    if (quantity) {
+      product.quantity = product.quantity + quantity;
+    }
+
+    return await this.productRepository.save(product);
+  }
+
   async decreaseProductQuantity(
     id: number,
     quantity: number,

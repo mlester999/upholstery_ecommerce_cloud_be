@@ -43,7 +43,7 @@ export class Order {
 
   // Create an array to hold multiple products
   @Column('jsonb', { nullable: true })
-  products?: object[];
+  products?: string;
 
   // @Column({
   //   type: 'enum',

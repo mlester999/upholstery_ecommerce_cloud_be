@@ -85,12 +85,7 @@ export class OrderService {
    * @param updateOrderDto this is partial type of createOrderDto.
    * @returns promise of update order
    */
-  async updateOrder(
-    details: any,
-    id: number,
-    customer: Customer,
-    products: Product[],
-  ): Promise<Order> {
+  async updateOrder(details: any, id: number): Promise<Order> {
     const order = await this.orderRepository.findOneBy({
       id,
     });
@@ -99,20 +94,16 @@ export class OrderService {
       throw new NotFoundException(`Order not found`);
     }
 
-    if (customer) {
-      order.customer = customer;
+    if (details.products) {
+      order.products = JSON.stringify(details.products);
     }
 
-    if (products) {
-      order.products = products;
+    if (details.total_quantity) {
+      order.total_quantity = details.total_quantity;
     }
 
-    if (details.source_id) {
-      order.source_id = details.source_id;
-    }
-
-    if (details.payment_method) {
-      order.payment_method = details.payment_method;
+    if (details.subtotal_price) {
+      order.subtotal_price = details.subtotal_price;
     }
 
     return await this.orderRepository.save(order);
