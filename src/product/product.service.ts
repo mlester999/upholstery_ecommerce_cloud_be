@@ -76,7 +76,9 @@ export class ProductService {
     return this.productRepository.find({
       relations: {
         category: true,
-        shop: true,
+        shop: {
+          seller: true,
+        },
       },
       order: {
         created_at: 'DESC', // Replace 'dateField' with the actual field you want to sort by
@@ -90,7 +92,9 @@ export class ProductService {
       where: { id },
       relations: {
         category: true,
-        shop: true,
+        shop: {
+          seller: true,
+        },
       },
     });
   }
@@ -100,7 +104,9 @@ export class ProductService {
       where: { slug },
       relations: {
         category: true,
-        shop: true,
+        shop: {
+          seller: true,
+        },
       },
     });
   }
