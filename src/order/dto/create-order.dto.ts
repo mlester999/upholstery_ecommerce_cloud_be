@@ -32,6 +32,30 @@ export class CreateOrderDto {
   @IsNotEmpty()
   subtotal_price: number;
 
+  @IsNumber()
+  @IsNotEmpty()
+  shipping_fee: number;
+
+  @IsNumber()
+  @IsNotEmpty()
+  total_price: number;
+
+  @IsString()
+  @IsOptional()
+  voucher_code: string;
+
+  @IsNumber()
+  @IsOptional()
+  price_discount: number;
+
+  @IsNumber()
+  @IsOptional()
+  shipping_discount: number;
+
+  @IsString()
+  @IsOptional()
+  discount_mode: string;
+
   @IsOptional()
   @IsNumber()
   @IsEnum(ActiveType)

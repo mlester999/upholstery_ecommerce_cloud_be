@@ -75,6 +75,24 @@ export class Order {
   @Column({ type: 'int' })
   subtotal_price: number;
 
+  @Column({ type: 'int' })
+  shipping_fee: number;
+
+  @Column({ type: 'int' })
+  total_price: number;
+
+  @Column({ type: 'varchar', length: 100, nullable: true })
+  voucher_code: string;
+
+  @Column({ type: 'int', nullable: true })
+  price_discount: number;
+
+  @Column({ type: 'int', nullable: true })
+  shipping_discount: number;
+
+  @Column({ type: 'varchar', length: 100, nullable: true })
+  discount_mode: string;
+
   @Column({ type: 'enum', enum: ActiveType })
   is_active: number;
 

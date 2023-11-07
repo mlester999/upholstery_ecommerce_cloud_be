@@ -40,9 +40,27 @@ export class OrderService {
     order.payment_method = createOrderDto.payment_method;
     order.subtotal_price = createOrderDto.subtotal_price;
     order.total_quantity = createOrderDto.total_quantity;
+    order.shipping_fee = createOrderDto.shipping_fee;
+    order.total_price = createOrderDto.total_price;
 
     if (createOrderDto.source_id) {
       order.source_id = createOrderDto.source_id;
+    }
+
+    if (createOrderDto.voucher_code) {
+      order.voucher_code = createOrderDto.voucher_code;
+    }
+
+    if (createOrderDto.price_discount) {
+      order.price_discount = createOrderDto.price_discount;
+    }
+
+    if (createOrderDto.shipping_discount) {
+      order.shipping_discount = createOrderDto.shipping_discount;
+    }
+
+    if (createOrderDto.discount_mode) {
+      order.discount_mode = createOrderDto.discount_mode;
     }
 
     return this.orderRepository.save(order);
@@ -104,6 +122,30 @@ export class OrderService {
 
     if (details.subtotal_price) {
       order.subtotal_price = details.subtotal_price;
+    }
+
+    if (details.shipping_fee) {
+      order.shipping_fee = details.shipping_fee;
+    }
+
+    if (details.total_price) {
+      order.total_price = details.total_price;
+    }
+
+    if (details.voucher_code) {
+      order.voucher_code = details.voucher_code;
+    }
+
+    if (details.price_discount) {
+      order.price_discount = details.price_discount;
+    }
+
+    if (details.shipping_discount) {
+      order.shipping_discount = details.shipping_discount;
+    }
+
+    if (details.discount_mode) {
+      order.discount_mode = details.discount_mode;
     }
 
     return await this.orderRepository.save(order);

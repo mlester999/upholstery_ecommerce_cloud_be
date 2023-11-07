@@ -173,7 +173,13 @@ export class OrderController {
         source_id: null,
         payment_method: 'Cash on Delivery',
         total_quantity: totalQuantity,
+        shipping_fee: 39,
         subtotal_price: totalPrice,
+        total_price: totalPrice + 39,
+        voucher_code: null,
+        price_discount: null,
+        shipping_discount: null,
+        discount_mode: null,
         is_active: ActiveType.Active,
       };
 
@@ -222,14 +228,17 @@ export class OrderController {
         products.push(el);
       }
 
-      await this.orderService.createOrder(
+      const newlyCreatedOrder = await this.orderService.createOrder(
         body.details,
         customer,
         JSON.stringify(products),
         randomOrderId,
       );
 
-      return { message: 'Created Order Successfully.' };
+      return {
+        message: 'Created Order Successfully.',
+        order_id: newlyCreatedOrder.order_id,
+      };
     } catch (e) {
       console.log(e);
       throw new UnauthorizedException();
