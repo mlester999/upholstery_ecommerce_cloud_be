@@ -4,6 +4,7 @@ import {
   Get,
   HttpCode,
   HttpStatus,
+  Ip,
   Param,
   Patch,
   Post,
@@ -19,6 +20,8 @@ import { OrderService } from './order.service';
 import * as Paymongo from 'paymongo';
 import { randomUuid } from '../../utils/generateUuid';
 import { ActiveType } from 'src/user/entities/user.entity';
+import { ActivityLogService } from 'src/activity-log/activity-log.service';
+import { OrderReceivedType } from './entities/order.entity';
 
 @Controller('order')
 export class OrderController {
@@ -27,6 +30,7 @@ export class OrderController {
     private readonly customerService: CustomerService,
     private readonly shopService: ShopService,
     private readonly productService: ProductService,
+    private readonly activityLogService: ActivityLogService,
     private readonly jwtService: JwtService,
   ) {}
 
@@ -112,7 +116,7 @@ export class OrderController {
   }
 
   @Post('add')
-  async addOrder(@Body() body: any, @Req() request) {
+  async addOrder(@Body() body: any, @Req() request, @Ip() ip) {
     try {
       const cookie = request.cookies['user_token'];
 
@@ -180,15 +184,20 @@ export class OrderController {
         price_discount: null,
         shipping_discount: null,
         discount_mode: null,
+        order_received: OrderReceivedType.OrderPending,
         is_active: ActiveType.Active,
       };
 
-      await this.orderService.createOrder(
+      const createdOrder = await this.orderService.createOrder(
         orderDetails,
         customer,
         JSON.stringify(orderedProducts),
         randomOrderId,
       );
+
+      await this.activityLogService.createActivityLog({title: 'customer-order', description: `A customer named ${createdOrder.customer.first_name} ${createdOrder.customer.last_name} ordered in our e-commerce website with the total quantity of ${createdOrder.total_quantity} and a total price of ₱${createdOrder.total_price.toLocaleString('en-US', {
+        minimumFractionDigits: 2,
+      })}, the order id is ${createdOrder.order_id}`, ip_address: ip});
 
       return { message: 'Created Order Successfully.' };
     } catch (e) {
@@ -197,7 +206,7 @@ export class OrderController {
   }
 
   @Post('customer-order')
-  async customerOrder(@Body() body: any, @Req() request) {
+  async customerOrder(@Body() body: any, @Req() request, @Ip() ip) {
     try {
       const cookie = request.cookies['user_token'];
 
@@ -235,9 +244,84 @@ export class OrderController {
         randomOrderId,
       );
 
+      await this.activityLogService.createActivityLog({title: 'customer-order', description: `A customer named ${newlyCreatedOrder.customer.first_name} ${newlyCreatedOrder.customer.last_name} ordered in our e-commerce website with the total quantity of ${newlyCreatedOrder.total_quantity} and a total price of ₱${newlyCreatedOrder.total_price.toLocaleString('en-US', {
+        minimumFractionDigits: 2,
+      })}, the order id is ${newlyCreatedOrder.order_id}`, ip_address: ip});
+
       return {
         message: 'Created Order Successfully.',
         order_id: newlyCreatedOrder.order_id,
+      };
+    } catch (e) {
+      console.log(e);
+      throw new UnauthorizedException();
+    }
+  }
+
+  @Patch('order-received')
+  async orderReceived(@Body() body: any, @Req() request) {
+    try {
+      const cookie = request.cookies['user_token'];
+
+      const data = await this.jwtService.verifyAsync(cookie);
+
+      if (!data) {
+        throw new UnauthorizedException();
+      }
+
+        const order = await this.orderService.findById(body.details.order_id);
+
+        if (!order) {
+          throw new BadRequestException('No Order Found.');
+        }
+
+        const orderedProducts = await Promise.all(
+          JSON.parse(order.products).map(async (product, index) => {
+            const originalProduct = await this.productService.findById(
+              Number(product.id),
+            );
+
+            if (!originalProduct) {
+              throw new BadRequestException('No Product Found.');
+            }
+            
+            if (originalProduct.id == body.details.product_id) {
+              const orderedProduct = {
+                ...originalProduct,
+                price: product.price,
+                quantity: product.quantity,
+                status: product.status,
+                order_received: OrderReceivedType.OrderReceived
+              };
+  
+              return orderedProduct;
+
+            } else {
+              const orderedProduct = {
+                ...originalProduct,
+                price: product.price,
+                quantity: product.quantity,
+                status: product.status,
+                order_received: product.order_received ?? OrderReceivedType.OrderPending
+              };
+  
+              return orderedProduct;
+            }
+          }),
+        );
+
+        if (orderedProducts.length === 0) {
+          throw new BadRequestException('No Products Found.');
+        }
+
+        const orderDetails = {
+          products: orderedProducts,
+        };
+
+        await this.orderService.updateOrder(orderDetails, parseInt(body.details.order_id));
+
+      return {
+        message: 'Order Received Successfully.'
       };
     } catch (e) {
       console.log(e);

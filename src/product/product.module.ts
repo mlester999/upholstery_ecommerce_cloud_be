@@ -13,11 +13,13 @@ import { ShopService } from 'src/shop/shop.service';
 import { Shop } from 'src/shop/entities/shop.entity';
 import { DoSpacesServiceProvider } from 'src/spaces-module/spaces-service';
 import { DoSpacesService } from 'src/spaces-module/spaces-service/doSpacesService';
+import { ActivityLogService } from 'src/activity-log/activity-log.service';
+import { ActivityLog } from 'src/activity-log/entities/activity-log.entity';
 
 @Module({
   imports: [
     AuthModule,
-    TypeOrmModule.forFeature([Product, Category, Shop]),
+    TypeOrmModule.forFeature([Product, Category, Shop, ActivityLog]),
     PassportModule.register({ defaultStrategy: 'jwt', session: false }),
     JwtModule.register({
       secret: JwtSecretKeyTMP,
@@ -31,6 +33,7 @@ import { DoSpacesService } from 'src/spaces-module/spaces-service/doSpacesServic
     ShopService,
     DoSpacesServiceProvider,
     DoSpacesService,
+    ActivityLogService,
     JwtStrategy,
   ],
 })

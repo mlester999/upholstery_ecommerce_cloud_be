@@ -26,6 +26,12 @@ export enum PaymentMethodType {
   GrabPay = 'Grab Pay',
 }
 
+export enum OrderReceivedType {
+  OrderPending = 0,
+  OrderReceived = 1,
+  OrderNotReceived = 2,
+}
+
 @Entity()
 export class Order {
   @PrimaryGeneratedColumn()

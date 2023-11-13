@@ -6,6 +6,7 @@ import {
   IsString,
 } from 'class-validator';
 import { ActiveType } from 'src/user/entities/user.entity';
+import { OrderReceivedType } from '../entities/order.entity';
 
 export class CreateOrderDto {
   @IsString()

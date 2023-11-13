@@ -2,6 +2,7 @@ import {
   Body,
   Controller,
   Get,
+  Ip,
   Param,
   Patch,
   Post,
@@ -12,12 +13,14 @@ import { BadRequestException } from '@nestjs/common/exceptions';
 import { JwtService } from '@nestjs/jwt';
 import { SellerService } from 'src/seller/seller.service';
 import { ShopService } from './shop.service';
+import { ActivityLogService } from 'src/activity-log/activity-log.service';
 
 @Controller('shop')
 export class ShopController {
   constructor(
     private readonly shopService: ShopService,
     private readonly sellerService: SellerService,
+    private readonly activityLogService: ActivityLogService,
     private readonly jwtService: JwtService,
   ) {}
 
@@ -73,7 +76,7 @@ export class ShopController {
   }
 
   @Post('add')
-  async addShop(@Body() body: any, @Req() request) {
+  async addShop(@Body() body: any, @Req() request, @Ip() ip) {
     try {
       const cookie = request.cookies['user_token'];
 
@@ -99,7 +102,9 @@ export class ShopController {
         );
       }
 
-      await this.shopService.createShop(body.details, seller);
+      const createdShop = await this.shopService.createShop(body.details, seller);
+
+      await this.activityLogService.createActivityLog({title: 'create-shop', description: `A new shop named ${createdShop.name} was created by ${createdShop.seller.first_name} ${createdShop.seller.last_name}`, ip_address: ip});
 
       return { message: 'Created Shop Successfully.' };
     } catch (e) {
@@ -120,6 +125,7 @@ export class ShopController {
     @Body() body: any,
     @Param('shop_id') shopId,
     @Req() request,
+    @Ip() ip
   ) {
     try {
       const cookie = request.cookies['user_token'];
@@ -157,7 +163,9 @@ export class ShopController {
         throw new BadRequestException('No Shop Found.');
       }
 
-      await this.shopService.updateShop(body, parseInt(shopId), seller);
+      const updatedShop = await this.shopService.updateShop(body, parseInt(shopId), seller);
+
+      await this.activityLogService.createActivityLog({title: 'update-shop', description: `A shop named ${updatedShop.name} has been updated by ${updatedShop.seller.first_name} ${updatedShop.seller.last_name}`, ip_address: ip});
 
       return { message: 'Updated shop details successfully.' };
     } catch (e) {

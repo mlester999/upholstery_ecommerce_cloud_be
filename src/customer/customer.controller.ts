@@ -2,6 +2,7 @@ import {
   Body,
   Controller,
   Get,
+  Ip,
   Param,
   Patch,
   Post,
@@ -14,12 +15,14 @@ import { response } from 'express';
 import { UserType } from 'src/user/entities/user.entity';
 import { UserService } from 'src/user/user.service';
 import { CustomerService } from './customer.service';
+import { ActivityLogService } from 'src/activity-log/activity-log.service';
 
 @Controller('customer')
 export class CustomerController {
   constructor(
     private readonly customerService: CustomerService,
     private readonly userService: UserService,
+    private readonly activityLogService: ActivityLogService,
     private readonly jwtService: JwtService,
   ) {}
 
@@ -58,7 +61,7 @@ export class CustomerController {
   }
 
   @Post('add')
-  async addCustomer(@Body() body: any, @Req() request) {
+  async addCustomer(@Body() body: any, @Req() request, @Ip() ip) {
     try {
       const cookie = request.cookies['user_token'];
 
@@ -89,7 +92,9 @@ export class CustomerController {
         throw new BadRequestException('Failed creating a user.');
       }
 
-      await this.customerService.createCustomer(body.details, newUser);
+      const createdCustomer = await this.customerService.createCustomer(body.details, newUser);
+
+      await this.activityLogService.createActivityLog({title: 'create-customer', description: `A new customer named ${createdCustomer.first_name} ${createdCustomer.last_name} was created.`, ip_address: ip});
 
       return { message: 'Created Customer Successfully.' };
     } catch (e) {
@@ -156,6 +161,7 @@ export class CustomerController {
     @Body() body: any,
     @Param('customer_id') customerId,
     @Req() request,
+    @Ip() ip
   ) {
     try {
       const cookie = request.cookies['user_token'];
@@ -188,7 +194,9 @@ export class CustomerController {
       const customer = await this.customerService.findById(body.details.id);
 
       if (customer.user.user_type === UserType.Customer) {
-        await this.customerService.updateCustomer(body);
+        const updatedCustomer = await this.customerService.updateCustomer(body);
+
+        await this.activityLogService.createActivityLog({title: 'update-customer', description: `A customer named ${updatedCustomer.first_name} ${updatedCustomer.last_name} has updated its account information.`, ip_address: ip});
 
         return { message: 'Updated customer details successfully.' };
       }

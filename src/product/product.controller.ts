@@ -11,6 +11,7 @@ import {
   UploadedFile,
   UnauthorizedException,
   UseInterceptors,
+  Ip,
 } from '@nestjs/common';
 import { BadRequestException } from '@nestjs/common/exceptions';
 import { JwtService } from '@nestjs/jwt';
@@ -22,6 +23,7 @@ import { DoSpacesService } from 'src/spaces-module/spaces-service/doSpacesServic
 import { diskStorage } from 'multer';
 import * as path from 'path';
 import { UploadedMulterFileI } from 'src/spaces-module/spaces-service';
+import { ActivityLogService } from 'src/activity-log/activity-log.service';
 
 @Controller('product')
 export class ProductController {
@@ -29,6 +31,7 @@ export class ProductController {
     private readonly productService: ProductService,
     private readonly categoryService: CategoryService,
     private readonly shopService: ShopService,
+    private readonly activityLogService: ActivityLogService,
     private readonly jwtService: JwtService,
     private readonly doSpacesService: DoSpacesService,
   ) {}
@@ -95,6 +98,7 @@ export class ProductController {
     @Body() body: any,
     @Req() request,
     @UploadedFile() file: UploadedMulterFileI,
+    @Ip() ip
   ) {
     try {
       const cookie = request.cookies['user_token'];
@@ -127,12 +131,14 @@ export class ProductController {
         'products',
       );
 
-      await this.productService.createProduct(
+      const createdProduct = await this.productService.createProduct(
         details,
         uploadedUrl,
         category,
         shop,
       );
+
+      await this.activityLogService.createActivityLog({title: 'create-product', description: `A new product named ${createdProduct.name} was created by ${createdProduct.shop.seller.first_name} ${createdProduct.shop.seller.last_name} in its shop named ${createdProduct.shop.name}`, ip_address: ip});
 
       return { message: 'Created Product Successfully.' };
     } catch (e) {
@@ -154,6 +160,7 @@ export class ProductController {
     @Param('product_id') productId,
     @Req() request,
     @UploadedFile() file: UploadedMulterFileI,
+    @Ip() ip
   ) {
     try {
       const cookie = request.cookies['user_token'];
@@ -222,13 +229,15 @@ export class ProductController {
         );
       }
 
-      await this.productService.updateProduct(
+      const updatedProduct = await this.productService.updateProduct(
         details,
         uploadedUrl,
         parseInt(productId),
         category,
         shop,
       );
+
+      await this.activityLogService.createActivityLog({title: 'update-product', description: `A product named ${updatedProduct.name} was updated by ${updatedProduct.shop.seller.first_name} ${updatedProduct.shop.seller.last_name} in its shop named ${updatedProduct.shop.name}`, ip_address: ip});
 
       return { message: 'Updated product details successfully.' };
     } catch (e) {

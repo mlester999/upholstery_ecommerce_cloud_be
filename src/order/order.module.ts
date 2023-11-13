@@ -13,11 +13,13 @@ import { JwtSecretKeyTMP, JwtStrategy } from 'src/auth/jwt.strategy';
 import { CustomerService } from 'src/customer/customer.service';
 import { ShopService } from 'src/shop/shop.service';
 import { ProductService } from 'src/product/product.service';
+import { ActivityLogService } from 'src/activity-log/activity-log.service';
+import { ActivityLog } from 'src/activity-log/entities/activity-log.entity';
 
 @Module({
   imports: [
     AuthModule,
-    TypeOrmModule.forFeature([Order, Customer, Shop, Product]),
+    TypeOrmModule.forFeature([Order, Customer, Shop, Product, ActivityLog]),
     PassportModule.register({ defaultStrategy: 'jwt', session: false }),
     JwtModule.register({
       secret: JwtSecretKeyTMP,
@@ -30,6 +32,7 @@ import { ProductService } from 'src/product/product.service';
     CustomerService,
     ShopService,
     ProductService,
+    ActivityLogService,
     JwtStrategy,
   ],
 })

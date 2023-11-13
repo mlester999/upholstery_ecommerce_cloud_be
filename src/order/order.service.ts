@@ -4,7 +4,7 @@ import { ActiveType } from 'src/user/entities/user.entity';
 import { Repository } from 'typeorm';
 import { CreateOrderDto } from './dto/create-order.dto';
 import { UpdateOrderDto } from './dto/update-order.dto';
-import { DeliveryStatusType, Order } from './entities/order.entity';
+import { DeliveryStatusType, Order, OrderReceivedType } from './entities/order.entity';
 import { Customer } from 'src/customer/entities/customer.entity';
 import { Product } from 'src/product/entities/product.entity';
 

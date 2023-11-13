@@ -24,6 +24,8 @@ import { Voucher } from './voucher/entities/voucher.entity';
 import { ShopModule } from './shop/shop.module';
 import { Shop } from './shop/entities/shop.entity';
 import { PaymongoModule } from './paymongo/paymongo.module';
+import { ActivityLogModule } from './activity-log/activity-log.module';
+import { ActivityLog } from './activity-log/entities/activity-log.entity';
 
 @Module({
   imports: [
@@ -32,7 +34,7 @@ import { PaymongoModule } from './paymongo/paymongo.module';
       host: 'localhost',
       port: 5432,
       username: 'postgres',
-      password: 'tw0t0w3rs',
+      password: 'password',
       entities: [
         User,
         Admin,
@@ -43,6 +45,7 @@ import { PaymongoModule } from './paymongo/paymongo.module';
         Order,
         Voucher,
         Shop,
+        ActivityLog
       ],
       database: 'upholstery-ecommerce',
       synchronize: true,
@@ -62,6 +65,7 @@ import { PaymongoModule } from './paymongo/paymongo.module';
     VoucherModule,
     ShopModule,
     PaymongoModule,
+    ActivityLogModule,
   ],
   controllers: [AppController],
   providers: [AppService],

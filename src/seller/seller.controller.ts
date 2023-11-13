@@ -2,6 +2,7 @@ import {
   Body,
   Controller,
   Get,
+  Ip,
   Param,
   Patch,
   Post,
@@ -14,12 +15,14 @@ import { response } from 'express';
 import { UserType } from 'src/user/entities/user.entity';
 import { UserService } from 'src/user/user.service';
 import { SellerService } from './seller.service';
+import { ActivityLogService } from 'src/activity-log/activity-log.service';
 
 @Controller('seller')
 export class SellerController {
   constructor(
     private readonly sellerService: SellerService,
     private readonly userService: UserService,
+    private readonly activityLogService: ActivityLogService,
     private readonly jwtService: JwtService,
   ) {}
 
@@ -58,7 +61,7 @@ export class SellerController {
   }
 
   @Post('add')
-  async addSeller(@Body() body: any, @Req() request) {
+  async addSeller(@Body() body: any, @Req() request, @Ip() ip) {
     try {
       const cookie = request.cookies['user_token'];
 
@@ -87,7 +90,9 @@ export class SellerController {
         throw new BadRequestException('Failed creating a user.');
       }
 
-      await this.sellerService.createSeller(body.details, newUser);
+      const createdSeller = await this.sellerService.createSeller(body.details, newUser);
+
+      await this.activityLogService.createActivityLog({title: 'create-seller', description: `A new seller named ${createdSeller.first_name} ${createdSeller.last_name} was created.`, ip_address: ip});
 
       return { message: 'Created Seller Successfully.' };
     } catch (e) {
@@ -104,7 +109,7 @@ export class SellerController {
   }
 
   @Post('new')
-  async newSeller(@Body() body: any, @Req() request) {
+  async newSeller(@Body() body: any, @Req() request, @Ip() ip) {
     try {
       if (Object.keys(body.details).length === 0) return;
 
@@ -131,7 +136,9 @@ export class SellerController {
         throw new BadRequestException('Failed creating a user.');
       }
 
-      await this.sellerService.createSeller(body.details, newUser);
+      const createdSeller = await this.sellerService.createSeller(body.details, newUser);
+
+      await this.activityLogService.createActivityLog({title: 'create-seller', description: `A new seller named ${createdSeller.first_name} ${createdSeller.last_name} was created.`, ip_address: ip});
 
       return { message: 'Created Seller Successfully.' };
     } catch (e) {
@@ -152,6 +159,7 @@ export class SellerController {
     @Body() body: any,
     @Param('seller_id') sellerId,
     @Req() request,
+    @Ip() ip
   ) {
     try {
       const cookie = request.cookies['user_token'];
@@ -182,7 +190,9 @@ export class SellerController {
       const seller = await this.sellerService.findById(body.details.id);
 
       if (seller.user.user_type === UserType.Seller) {
-        await this.sellerService.updateSeller(body);
+        const updatedSeller = await this.sellerService.updateSeller(body);
+
+        await this.activityLogService.createActivityLog({title: 'update-seller', description: `A seller named ${updatedSeller.first_name} ${updatedSeller.last_name} has updated its account information.`, ip_address: ip});
 
         return { message: 'Updated seller details successfully.' };
       }
