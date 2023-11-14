@@ -104,7 +104,7 @@ export class ShopController {
 
       const createdShop = await this.shopService.createShop(body.details, seller);
 
-      await this.activityLogService.createActivityLog({title: 'create-shop', description: `A new shop named ${createdShop.name} was created by ${createdShop.seller.first_name} ${createdShop.seller.last_name}`, ip_address: ip});
+      await this.activityLogService.createActivityLog({title: 'create-shop', description: `A new shop named ${createdShop.name} was created by ${createdShop.seller.first_name} ${createdShop.seller.last_name}.`, ip_address: ip});
 
       return { message: 'Created Shop Successfully.' };
     } catch (e) {
@@ -165,7 +165,7 @@ export class ShopController {
 
       const updatedShop = await this.shopService.updateShop(body, parseInt(shopId), seller);
 
-      await this.activityLogService.createActivityLog({title: 'update-shop', description: `A shop named ${updatedShop.name} has been updated by ${updatedShop.seller.first_name} ${updatedShop.seller.last_name}`, ip_address: ip});
+      await this.activityLogService.createActivityLog({title: 'update-shop', description: `A shop named ${updatedShop.name} has been updated by ${updatedShop.seller.first_name} ${updatedShop.seller.last_name}.`, ip_address: ip});
 
       return { message: 'Updated shop details successfully.' };
     } catch (e) {

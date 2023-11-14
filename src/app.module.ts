@@ -26,6 +26,8 @@ import { Shop } from './shop/entities/shop.entity';
 import { PaymongoModule } from './paymongo/paymongo.module';
 import { ActivityLogModule } from './activity-log/activity-log.module';
 import { ActivityLog } from './activity-log/entities/activity-log.entity';
+import { ReturnRefundModule } from './return-refund/return-refund.module';
+import { ReturnRefund } from './return-refund/entities/return-refund.entity';
 
 @Module({
   imports: [
@@ -45,6 +47,7 @@ import { ActivityLog } from './activity-log/entities/activity-log.entity';
         Order,
         Voucher,
         Shop,
+        ReturnRefund,
         ActivityLog
       ],
       database: 'upholstery-ecommerce',
@@ -66,6 +69,7 @@ import { ActivityLog } from './activity-log/entities/activity-log.entity';
     ShopModule,
     PaymongoModule,
     ActivityLogModule,
+    ReturnRefundModule,
   ],
   controllers: [AppController],
   providers: [AppService],

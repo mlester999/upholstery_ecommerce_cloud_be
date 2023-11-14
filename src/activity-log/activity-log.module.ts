@@ -12,6 +12,7 @@ import { SellerModule } from 'src/seller/seller.module';
 import { ProductModule } from 'src/product/product.module';
 import { OrderModule } from 'src/order/order.module';
 import { CustomerModule } from 'src/customer/customer.module';
+import { ReturnRefundModule } from 'src/return-refund/return-refund.module';
 
 @Module({
   imports: [
@@ -21,6 +22,7 @@ import { CustomerModule } from 'src/customer/customer.module';
     SellerModule,
     ProductModule,
     OrderModule,
+    ReturnRefundModule,
     TypeOrmModule.forFeature([ActivityLog]),
     PassportModule.register({ defaultStrategy: 'jwt', session: false }),
     JwtModule.register({

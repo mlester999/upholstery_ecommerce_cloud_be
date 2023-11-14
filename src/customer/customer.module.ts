@@ -11,10 +11,12 @@ import { JwtModule } from '@nestjs/jwt';
 import { PassportModule } from '@nestjs/passport';
 import { ActivityLogService } from 'src/activity-log/activity-log.service';
 import { ActivityLog } from 'src/activity-log/entities/activity-log.entity';
+import { ReturnRefundModule } from 'src/return-refund/return-refund.module';
 
 @Module({
   imports: [
     AuthModule,
+    ReturnRefundModule,
     TypeOrmModule.forFeature([Customer, User, ActivityLog]),
     PassportModule.register({ defaultStrategy: 'jwt', session: false }),
     JwtModule.register({

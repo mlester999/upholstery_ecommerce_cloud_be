@@ -15,10 +15,12 @@ import { ShopService } from 'src/shop/shop.service';
 import { ProductService } from 'src/product/product.service';
 import { ActivityLogService } from 'src/activity-log/activity-log.service';
 import { ActivityLog } from 'src/activity-log/entities/activity-log.entity';
+import { ReturnRefundModule } from 'src/return-refund/return-refund.module';
 
 @Module({
   imports: [
     AuthModule,
+    ReturnRefundModule,
     TypeOrmModule.forFeature([Order, Customer, Shop, Product, ActivityLog]),
     PassportModule.register({ defaultStrategy: 'jwt', session: false }),
     JwtModule.register({
