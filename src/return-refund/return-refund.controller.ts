@@ -56,6 +56,25 @@ export class ReturnRefundController {
       throw new UnauthorizedException();
     }
   }
+  
+  @Get('/slug/:return_refund_slug')
+  async findOneBySlug(@Req() request, @Param('return_refund_slug') returnRefundSlug) {
+    try {
+      const cookie = request.cookies['user_token'];
+
+      const data = await this.jwtService.verifyAsync(cookie);
+
+      if (!data) {
+        throw new UnauthorizedException();
+      }
+
+      console.log(returnRefundSlug);
+
+      return this.returnRefundService.findBySlug(returnRefundSlug);
+    } catch (e) {
+      throw new UnauthorizedException();
+    }
+  }
 
   @Post('add')
   @UseInterceptors(FileInterceptor('image_file'))
@@ -125,4 +144,124 @@ export class ReturnRefundController {
         throw new UnauthorizedException();
     }
   }
+
+  @Patch('update-status/:return_refund_id')
+  async updateStatus(
+    @Body() body: any,
+    @Param('return_refund_id') returnRefundId,
+    @Req() request,
+    @Ip() ip
+  ) {
+    try {
+      const cookie = request.cookies['user_token'];
+
+      const data = await this.jwtService.verifyAsync(cookie);
+
+      if (!data) {
+        throw new UnauthorizedException();
+      }
+
+      if (Object.keys(body.details).length === 0) return;
+
+      const updatedShop: any = await this.returnRefundService.updateReturnRefundStatus(body.details, parseInt(returnRefundId));
+
+      await this.activityLogService.createActivityLog({title: 'update-return-refund-status', description: `A seller named ${updatedShop.product.shop.seller.first_name} ${updatedShop.product.shop.seller.last_name} updated the return/refund status of an order of ${updatedShop.customer.first_name} ${updatedShop.customer.last_name}. The return refund id is: ${updatedShop.return_refund_id}.`, ip_address: ip});
+
+      return { message: 'Updated return refund status successfully.' };
+    } catch (e) {
+      throw new UnauthorizedException();
+    }
+  }
+
+  // @Patch('update/:product_id')
+  // @UseInterceptors(FileInterceptor('image_file'))
+  // async updateReturnRefund(
+  //   @Body() body: any,
+  //   @Param('product_id') productId,
+  //   @Req() request,
+  //   @UploadedFile() file: UploadedMulterFileI,
+  //   @Ip() ip
+  // ) {
+  //   try {
+  //     const cookie = request.cookies['user_token'];
+
+  //     const data = await this.jwtService.verifyAsync(cookie);
+
+  //     if (!data) {
+  //       throw new UnauthorizedException();
+  //     }
+
+  //     const details = JSON.parse(body.details);
+
+  //     if (Object.keys(details).length <= 1) return;
+
+  //     let category;
+  //     let shop;
+
+  //     if (details.category_id) {
+  //       category = await this.categoryService.findById(details.category_id);
+
+  //       if (!category) {
+  //         throw new BadRequestException('No Category Found.');
+  //       }
+  //     }
+
+  //     if (details.shop_id) {
+  //       shop = await this.shopService.findById(details.shop_id);
+
+  //       if (!shop) {
+  //         throw new BadRequestException('No Shop Found.');
+  //       }
+  //     }
+
+  //     const product = await this.productService.findById(productId);
+
+  //     if (!product) {
+  //       throw new BadRequestException('No Product Found.');
+  //     }
+
+  //     let uploadedUrl;
+
+  //     if (details.image_file) {
+  //       await this.doSpacesService.removeFile(
+  //         `products/${product.shop.id}/${product.image_name}`,
+  //       );
+
+  //       if (details.shop_id) {
+  //         uploadedUrl = await this.doSpacesService.uploadFile(
+  //           file,
+  //           details.shop_id,
+  //           'products',
+  //         );
+  //       } else {
+  //         uploadedUrl = await this.doSpacesService.uploadFile(
+  //           file,
+  //           product.shop.id,
+  //           'products',
+  //         );
+  //       }
+  //     } else if (details.shop_id) {
+  //       uploadedUrl = await this.doSpacesService.renameFolder(
+  //         'products',
+  //         product.shop.id,
+  //         details.shop_id,
+  //         product.image_name,
+  //       );
+  //     }
+
+  //     const updatedProduct = await this.productService.updateProduct(
+  //       details,
+  //       uploadedUrl,
+  //       parseInt(productId),
+  //       category,
+  //       shop,
+  //     );
+
+  //     await this.activityLogService.createActivityLog({title: 'update-product', description: `A product named ${updatedProduct.name} was updated by ${updatedProduct.shop.seller.first_name} ${updatedProduct.shop.seller.last_name} in its shop named ${updatedProduct.shop.name}`, ip_address: ip});
+
+  //     return { message: 'Updated product details successfully.' };
+  //   } catch (e) {
+  //     throw new UnauthorizedException();
+  //   }
+  // }
 }

@@ -61,7 +61,19 @@ export class ReturnRefundService {
 
   async findById(id: number): Promise<ReturnRefund | undefined> {
     return this.returnRefundRepository.findOne({
-      where: { id }
+      where: { id },
+      relations: {
+        customer: true
+      },
+    });
+  }
+
+  async findBySlug(slug: string): Promise<ReturnRefund | undefined> {
+    return this.returnRefundRepository.findOne({
+      where: { return_refund_id: slug },
+      relations: {
+        customer: true,
+      },
     });
   }
 
@@ -87,7 +99,7 @@ export class ReturnRefundService {
     });
 
     if (!returnRefund) {
-      throw new NotFoundException(`ReturnRefund not found`);
+      throw new NotFoundException(`Return Refund not found`);
     }
 
     if (details.products) {
@@ -101,6 +113,20 @@ export class ReturnRefundService {
     if (details.image_file) {
       returnRefund.image_file = uploadedUrl.url;
       returnRefund.image_name = uploadedUrl.fileName;
+    }
+
+    if (details.status) {
+      returnRefund.status = details.status;
+    }
+
+    return await this.returnRefundRepository.save(returnRefund);
+  }
+
+  async updateReturnRefundStatus(details: any, id: number): Promise<ReturnRefund> {
+    const returnRefund = await this.findById(id);
+
+    if (!returnRefund) {
+      throw new NotFoundException(`Return Refund not found`);
     }
 
     if (details.status) {
