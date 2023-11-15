@@ -264,7 +264,7 @@ export class ProductController {
 
       await this.productService.deactivateProduct(product.id);
 
-      return { message: 'Deactivated category successfully.' };
+      return { message: 'Deactivated product successfully.' };
     } catch (e) {
       if (e.response.message === 'No Product Found.') {
         throw new BadRequestException('No Product Found.');

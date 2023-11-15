@@ -264,4 +264,60 @@ export class ReturnRefundController {
   //     throw new UnauthorizedException();
   //   }
   // }
+
+  @Patch('deactivate/:return_refund_id')
+  async deactivateReturnRefund(@Param('return_refund_id') returnRefundId, @Req() request) {
+    try {
+      const cookie = request.cookies['user_token'];
+
+      const data = await this.jwtService.verifyAsync(cookie);
+
+      if (!data) {
+        throw new UnauthorizedException();
+      }
+
+      const returnRefund = await this.returnRefundService.findById(returnRefundId);
+
+      if (!returnRefund) {
+        throw new BadRequestException('No Return / Refund Found.');
+      }
+
+      await this.returnRefundService.deactivateReturnRefund(returnRefund.id);
+
+      return { message: 'Deactivated return / refund successfully.' };
+    } catch (e) {
+      if (e.response.message === 'No Return / Refund Found.') {
+        throw new BadRequestException('No Return / Refund Found.');
+      }
+      throw new UnauthorizedException();
+    }
+  }
+
+  @Patch('activate/:return_refund_id')
+  async activateReturnRefund(@Param('return_refund_id') returnRefundId, @Req() request) {
+    try {
+      const cookie = request.cookies['user_token'];
+
+      const data = await this.jwtService.verifyAsync(cookie);
+
+      if (!data) {
+        throw new UnauthorizedException();
+      }
+
+      const returnRefund = await this.returnRefundService.findById(returnRefundId);
+
+      if (!returnRefund) {
+        throw new BadRequestException('No Return / Refund Found.');
+      }
+
+      await this.returnRefundService.activateReturnRefund(returnRefund.id);
+
+      return { message: 'Activated return / refund successfully.' };
+    } catch (e) {
+      if (e.response.message === 'No Return / Refund Found.') {
+        throw new BadRequestException('No Return / Refund Found.');
+      }
+      throw new UnauthorizedException();
+    }
+  }
 }

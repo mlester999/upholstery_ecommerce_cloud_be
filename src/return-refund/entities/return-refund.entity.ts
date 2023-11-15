@@ -14,7 +14,8 @@ import {
 
 export enum ReturnRefundType {
   Pending = 'Pending',
-  Accepted = 'Accepted',
+  Approved = 'Approved',
+  Refunded = 'Refunded',
   Rejected = 'Rejected',
 }
 
@@ -48,11 +49,12 @@ export class ReturnRefund {
 
   @Column({
     type: 'enum',
-    enum: ['Pending', 'Accepted', 'Rejected'],
+    enum: ['Pending', 'Approved', 'Refunded', 'Rejected'],
   })
   /**
    * Pending - Pending
-   * Accepted - Accepted
+   * Approved - Approved
+   * Refunded - Refunded
    * Rejected - Rejected
    */
   status: string;
