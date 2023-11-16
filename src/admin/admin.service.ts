@@ -70,6 +70,12 @@ export class AdminService {
     });
   }
 
+  async findByContactNumber(contact_number: string): Promise<Admin | undefined> {
+    return this.adminRepository.findOne({
+      where: { contact_number },
+    });
+  }
+
   async findByIdAuth(id: number): Promise<Admin | undefined> {
     return this.adminRepository.findOne({
       where: { id },

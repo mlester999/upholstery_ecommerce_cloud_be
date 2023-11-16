@@ -1,4 +1,5 @@
 import {
+  IsDate,
   IsEnum,
   IsNotEmpty,
   IsOptional,
@@ -6,6 +7,7 @@ import {
   Matches,
   MinLength,
 } from 'class-validator';
+import { IsUnique } from 'src/is-unique.validator';
 
 export class CreateAdminDto {
   @IsString()
@@ -29,5 +31,10 @@ export class CreateAdminDto {
 
   @IsString()
   @Matches(/^09\d{9}$/)
+  @IsUnique({tableName: 'admin', column: 'contact_number'})
   contact_number: string;
+
+  @IsDate()
+  @IsOptional()
+  contact_number_verified_at: Date;
 }

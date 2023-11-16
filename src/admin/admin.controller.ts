@@ -70,11 +70,21 @@ export class AdminController {
 
       if (Object.keys(body.details).length === 0) return;
 
-      const admin = await this.adminService.findByEmail(body?.details.email);
+      const adminEmail = await this.adminService.findByEmail(body?.details.email);
 
-      if (admin) {
+      if (adminEmail) {
         throw new BadRequestException(
           'The email address that you provided is already taken.',
+        );
+      }
+
+      const adminContact = await this.adminService.findByContactNumber(
+        body?.details.contact_number,
+      );
+
+      if (adminContact) {
+        throw new BadRequestException(
+          'The contact number that you provided is already taken.',
         );
       }
 
@@ -97,6 +107,15 @@ export class AdminController {
       ) {
         throw new BadRequestException(
           'The email address that you provided is already taken.',
+        );
+      }
+
+      if (
+        e.response.message ===
+        'The contact number that you provided is already taken.'
+      ) {
+        throw new BadRequestException(
+          'The contact number that you provided is already taken.',
         );
       }
       throw new UnauthorizedException();

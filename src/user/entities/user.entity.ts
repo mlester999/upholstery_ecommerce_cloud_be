@@ -3,6 +3,7 @@ import {
   CreateDateColumn,
   Entity,
   PrimaryGeneratedColumn,
+  Unique,
   UpdateDateColumn,
 } from 'typeorm';
 
@@ -19,6 +20,7 @@ export enum ActiveType {
 }
 
 @Entity()
+@Unique(['email'])
 export class User {
   /**
    * this decorator will help to auto generate id for the table.

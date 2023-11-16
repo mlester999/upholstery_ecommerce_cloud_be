@@ -73,13 +73,23 @@ export class CustomerController {
 
       if (Object.keys(body.details).length === 0) return;
 
-      const customer = await this.customerService.findByEmail(
+      const customerEmail = await this.customerService.findByEmail(
         body?.details.email,
       );
 
-      if (customer) {
+      if (customerEmail) {
         throw new BadRequestException(
           'The email address that you provided is already taken.',
+        );
+      }
+
+      const customerContact = await this.customerService.findByContactNumber(
+        body?.details.contact_number,
+      );
+
+      if (customerContact) {
+        throw new BadRequestException(
+          'The contact number that you provided is already taken.',
         );
       }
 
@@ -106,6 +116,15 @@ export class CustomerController {
           'The email address that you provided is already taken.',
         );
       }
+
+      if (
+        e.response.message ===
+        'The contact number that you provided is already taken.'
+      ) {
+        throw new BadRequestException(
+          'The contact number that you provided is already taken.',
+        );
+      }
       throw new UnauthorizedException();
     }
   }
@@ -115,19 +134,29 @@ export class CustomerController {
     try {
       if (Object.keys(body.details).length === 0) return;
 
-      const customer = await this.customerService.findByEmail(
+      if (body.details.password !== body.details.confirm_password) {
+        throw new BadRequestException(
+          'The password that you provided does not match.',
+        );
+      }
+
+      const customerEmail = await this.customerService.findByEmail(
         body?.details.email,
       );
 
-      if (customer) {
+      if (customerEmail) {
         throw new BadRequestException(
           'The email address that you provided is already taken.',
         );
       }
 
-      if (body.details.password !== body.details.confirm_password) {
+      const customerContact = await this.customerService.findByContactNumber(
+        body?.details.contact_number,
+      );
+
+      if (customerContact) {
         throw new BadRequestException(
-          'The password that you provided does not match.',
+          'The contact number that you provided is already taken.',
         );
       }
 
@@ -150,6 +179,15 @@ export class CustomerController {
       ) {
         throw new BadRequestException(
           'The email address that you provided is already taken.',
+        );
+      }
+
+      if (
+        e.response.message ===
+        'The contact number that you provided is already taken.'
+      ) {
+        throw new BadRequestException(
+          'The contact number that you provided is already taken.',
         );
       }
       throw new UnauthorizedException();

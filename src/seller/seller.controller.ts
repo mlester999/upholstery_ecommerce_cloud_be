@@ -73,11 +73,21 @@ export class SellerController {
 
       if (Object.keys(body.details).length === 0) return;
 
-      const seller = await this.sellerService.findByEmail(body?.details.email);
+      const sellerEmail = await this.sellerService.findByEmail(body?.details.email);
 
-      if (seller) {
+      if (sellerEmail) {
         throw new BadRequestException(
           'The email address that you provided is already taken.',
+        );
+      }
+
+      const sellerContact = await this.sellerService.findByContactNumber(
+        body?.details.contact_number,
+      );
+
+      if (sellerContact) {
+        throw new BadRequestException(
+          'The contact number that you provided is already taken.',
         );
       }
 
@@ -104,6 +114,15 @@ export class SellerController {
           'The email address that you provided is already taken.',
         );
       }
+
+      if (
+        e.response.message ===
+        'The contact number that you provided is already taken.'
+      ) {
+        throw new BadRequestException(
+          'The contact number that you provided is already taken.',
+        );
+      }
       throw new UnauthorizedException();
     }
   }
@@ -113,17 +132,27 @@ export class SellerController {
     try {
       if (Object.keys(body.details).length === 0) return;
 
-      const seller = await this.sellerService.findByEmail(body?.details.email);
+      if (body.details.password !== body.details.confirm_password) {
+        throw new BadRequestException(
+          'The password that you provided does not match.',
+        );
+      }
 
-      if (seller) {
+      const sellerEmail = await this.sellerService.findByEmail(body?.details.email);
+
+      if (sellerEmail) {
         throw new BadRequestException(
           'The email address that you provided is already taken.',
         );
       }
+      
+      const sellerContact = await this.sellerService.findByContactNumber(
+        body?.details.contact_number,
+      );
 
-      if (body.details.password !== body.details.confirm_password) {
+      if (sellerContact) {
         throw new BadRequestException(
-          'The password that you provided does not match.',
+          'The contact number that you provided is already taken.',
         );
       }
 
@@ -148,6 +177,15 @@ export class SellerController {
       ) {
         throw new BadRequestException(
           'The email address that you provided is already taken.',
+        );
+      }
+
+      if (
+        e.response.message ===
+        'The contact number that you provided is already taken.'
+      ) {
+        throw new BadRequestException(
+          'The contact number that you provided is already taken.',
         );
       }
       throw new UnauthorizedException();

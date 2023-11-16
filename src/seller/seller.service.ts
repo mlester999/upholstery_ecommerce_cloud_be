@@ -78,6 +78,12 @@ export class SellerService {
     });
   }
 
+  async findByContactNumber(contact_number: string): Promise<Seller | undefined> {
+    return this.sellerRepository.findOne({
+      where: { contact_number  }
+    });
+  }
+
   /**
    * this function used to get data of use whose id is passed in parameter
    * @param id is type of number, which represent the id of user.

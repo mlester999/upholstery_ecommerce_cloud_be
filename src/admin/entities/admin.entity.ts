@@ -6,10 +6,12 @@ import {
   JoinColumn,
   OneToOne,
   PrimaryGeneratedColumn,
+  Unique,
   UpdateDateColumn,
 } from 'typeorm';
 
 @Entity()
+@Unique(['contact_number'])
 export class Admin {
   /**
    * this decorator will help to auto generate id for the table.
@@ -40,6 +42,10 @@ export class Admin {
 
   @Column({ type: 'varchar', length: 11 })
   contact_number: string;
+
+  
+  @Column({ type: 'timestamp', nullable: true })
+  contact_number_verified_at: Date;
 
   @CreateDateColumn()
   created_at: Date;

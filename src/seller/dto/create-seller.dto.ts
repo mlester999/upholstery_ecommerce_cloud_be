@@ -1,4 +1,5 @@
 import {
+  IsDate,
   IsDateString,
   IsEnum,
   IsNotEmpty,
@@ -7,6 +8,7 @@ import {
   Matches,
   MinLength,
 } from 'class-validator';
+import { IsUnique } from 'src/is-unique.validator';
 
 export class CreateSellerDto {
   @IsString()
@@ -34,7 +36,12 @@ export class CreateSellerDto {
 
   @IsString()
   @Matches(/^09\d{9}$/)
+  @IsUnique({tableName: 'seller', column: 'contact_number'})
   contact_number: string;
+
+  @IsDate()
+  @IsOptional()
+  contact_number_verified_at: Date;
 
   @IsString()
   @MinLength(2, { message: 'Region must have atleast 2 characters.' })
