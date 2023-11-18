@@ -33,6 +33,7 @@ import { ConfigModule } from '@nestjs/config';
 import { BankAccountsModule } from './bank-accounts/bank-accounts.module';
 import { SellerBalanceModule } from './seller-balance/seller-balance.module';
 import { BankAccount } from './bank-accounts/entities/bank-account.entity';
+import { SellerBalance } from './seller-balance/entities/seller-balance.entity';
 
 @Module({
   imports: [
@@ -55,6 +56,7 @@ import { BankAccount } from './bank-accounts/entities/bank-account.entity';
         Shop,
         ReturnRefund,
         BankAccount,
+        SellerBalance,
         ActivityLog
       ],
       database: 'upholstery-ecommerce',

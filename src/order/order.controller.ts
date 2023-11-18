@@ -22,6 +22,8 @@ import { randomUuid } from '../../utils/generateUuid';
 import { ActiveType } from 'src/user/entities/user.entity';
 import { ActivityLogService } from 'src/activity-log/activity-log.service';
 import { OrderReceivedType } from './entities/order.entity';
+import { SellerBalanceService } from 'src/seller-balance/seller-balance.service';
+import { SellerBalanceStatusType } from 'src/seller-balance/entities/seller-balance.entity';
 
 @Controller('order')
 export class OrderController {
@@ -30,6 +32,7 @@ export class OrderController {
     private readonly customerService: CustomerService,
     private readonly shopService: ShopService,
     private readonly productService: ProductService,
+    private readonly sellerBalanceService: SellerBalanceService,
     private readonly activityLogService: ActivityLogService,
     private readonly jwtService: JwtService,
   ) {}
@@ -147,6 +150,12 @@ export class OrderController {
             throw new BadRequestException('No Product Found.');
           }
 
+          const shop = await this.shopService.findById(Number(el.shop_id));
+
+          if (!shop) {
+            throw new BadRequestException('No Shop Found.');
+          }
+
           const orderedProduct = {
             ...product,
             price: product.price * Number(body.details.quantity[index]),
@@ -156,6 +165,12 @@ export class OrderController {
 
           totalPrice += orderedProduct.price;
           totalQuantity += orderedProduct.quantity;
+
+          const details = {amount: orderedProduct.price, status: SellerBalanceStatusType.Pending, is_active: ActiveType.Active}
+
+          const sellerBalanceId = randomUuid(14, 'ALPHANUM');
+
+          await this.sellerBalanceService.createSellerBalance(details, sellerBalanceId, shop, product);
 
           await this.productService.decreaseProductQuantity(
             Number(el),
@@ -226,21 +241,88 @@ export class OrderController {
         throw new BadRequestException('No Customer Found.');
       }
 
-      const randomOrderId = randomUuid(14, 'ALPHANUM');
+      let totalPrice = 0;
+      let totalQuantity = 0;
 
-      const products = [];
+  
 
-      for (const el of body.details.product_list) {
-        el.status = 'Processing';
-        await this.productService.decreaseProductQuantity(el.id, el.quantity);
+      const orderedProducts = await Promise.all(
+        body.details.product_list.map(async (el, index) => {
+          const product = await this.productService.findById(Number(el.id));
 
-        products.push(el);
+          if (!product) {
+            throw new BadRequestException('No Product Found.');
+          }
+
+          const shop = await this.shopService.findById(Number(el.shop.id));
+
+          if (!shop) {
+            throw new BadRequestException('No Shop Found.');
+          }
+
+          const orderedProduct = {
+            ...product,
+            price: product.price * Number(el.quantity),
+            quantity: Number(el.quantity),
+            status: 'Processing',
+          };
+
+          totalPrice += orderedProduct.price;
+          totalQuantity += orderedProduct.quantity;
+
+          const sellerBalanceId = randomUuid(14, 'ALPHANUM');
+
+          const details = {amount: orderedProduct.price, status: SellerBalanceStatusType.Pending, is_active: ActiveType.Active}
+
+          await this.sellerBalanceService.createSellerBalance(details, sellerBalanceId, shop, product);
+
+          await this.productService.decreaseProductQuantity(
+            Number(el.id),
+            el.quantity,
+          );
+
+          return orderedProduct;
+        }),
+      );
+
+      if (orderedProducts.length === 0) {
+        throw new BadRequestException('No Products Found.');
       }
 
+      const randomOrderId = randomUuid(14, 'ALPHANUM');
+
+      const orderDetails = {
+        order_id: randomOrderId,
+        source_id: body.details.source_id ?? null,
+        payment_method: body.details.payment_method,
+        total_quantity: body.details.total_quantity,
+        shipping_fee: body.details.shipping_fee,
+        subtotal_price: body.details.subtotal_price,
+        total_price: body.details.total_price,
+        voucher_code: body.details.voucher_code,
+        price_discount: body.details.price_discount,
+        shipping_discount: body.details.shipping_discount,
+        discount_mode: body.details.discount_mode,
+        order_received: OrderReceivedType.OrderPending,
+        is_active: ActiveType.Active,
+      };
+
+      // const products = [];
+
+      // for (const el of body.details.product_list) {
+      //   el.status = 'Processing';
+      //   console.log(body.details.product_list);
+
+      //   // await this.sellerBalanceService.createSellerBalance(details, shop, product);
+      //   await this.productService.decreaseProductQuantity(el.id, el.quantity);
+
+      //   products.push(el);
+      // }
+
       const newlyCreatedOrder = await this.orderService.createOrder(
-        body.details,
+        orderDetails,
         customer,
-        JSON.stringify(products),
+        JSON.stringify(orderedProducts),
         randomOrderId,
       );
 
@@ -253,7 +335,6 @@ export class OrderController {
         order_id: newlyCreatedOrder.order_id,
       };
     } catch (e) {
-      console.log(e);
       throw new UnauthorizedException();
     }
   }

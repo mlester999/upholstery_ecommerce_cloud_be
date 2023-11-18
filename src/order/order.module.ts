@@ -16,12 +16,14 @@ import { ProductService } from 'src/product/product.service';
 import { ActivityLogService } from 'src/activity-log/activity-log.service';
 import { ActivityLog } from 'src/activity-log/entities/activity-log.entity';
 import { ReturnRefundModule } from 'src/return-refund/return-refund.module';
+import { SellerBalanceService } from 'src/seller-balance/seller-balance.service';
+import { SellerBalance } from 'src/seller-balance/entities/seller-balance.entity';
 
 @Module({
   imports: [
     AuthModule,
     ReturnRefundModule,
-    TypeOrmModule.forFeature([Order, Customer, Shop, Product, ActivityLog]),
+    TypeOrmModule.forFeature([Order, Customer, Shop, Product, SellerBalance, ActivityLog]),
     PassportModule.register({ defaultStrategy: 'jwt', session: false }),
     JwtModule.register({
       secret: JwtSecretKeyTMP,
@@ -34,6 +36,7 @@ import { ReturnRefundModule } from 'src/return-refund/return-refund.module';
     CustomerService,
     ShopService,
     ProductService,
+    SellerBalanceService,
     ActivityLogService,
     JwtStrategy,
   ],
