@@ -93,6 +93,20 @@ export class CustomerService {
     return this.customerRepository.findOneBy({ id });
   }
 
+  async verifyPhoneNumber(id: number): Promise<Customer> {
+    const customer = await this.customerRepository.findOneBy({
+      id,
+    });
+
+    if (!customer) {
+      throw new NotFoundException(`Customer not found`);
+    }
+
+    customer.contact_number_verified_at = new Date();
+
+    return await this.customerRepository.save(customer);
+  }
+
   /**
    * this function is used to updated specific user whose id is passed in
    * parameter along with passed updated data

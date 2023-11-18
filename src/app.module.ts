@@ -28,9 +28,12 @@ import { ActivityLogModule } from './activity-log/activity-log.module';
 import { ActivityLog } from './activity-log/entities/activity-log.entity';
 import { ReturnRefundModule } from './return-refund/return-refund.module';
 import { ReturnRefund } from './return-refund/entities/return-refund.entity';
+import { SemaphoreModule } from './semaphore/semaphore.module';
+import { ConfigModule } from '@nestjs/config';
 
 @Module({
   imports: [
+    ConfigModule.forRoot(),
     TypeOrmModule.forRoot({
       type: 'postgres',
       host: 'localhost',
@@ -70,6 +73,7 @@ import { ReturnRefund } from './return-refund/entities/return-refund.entity';
     PaymongoModule,
     ActivityLogModule,
     ReturnRefundModule,
+    SemaphoreModule,
   ],
   controllers: [AppController],
   providers: [AppService],

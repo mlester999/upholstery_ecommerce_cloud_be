@@ -86,6 +86,8 @@ export class ProductController {
         throw new UnauthorizedException();
       }
 
+      console.log(productSlug)
+
       return this.productService.findBySlug(productSlug);
     } catch (e) {
       throw new UnauthorizedException();

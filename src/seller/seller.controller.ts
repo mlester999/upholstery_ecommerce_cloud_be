@@ -247,6 +247,38 @@ export class SellerController {
     }
   }
 
+  @Patch('verify-contact-number/:seller_id')
+  async verifyCustomerContactNumber(
+    @Body() body: any,
+    @Param('seller_id') sellerId,
+    @Req() request,
+    @Ip() ip
+  ) {
+    try {
+      const cookie = request.cookies['user_token'];
+
+      const data = await this.jwtService.verifyAsync(cookie);
+
+      if (!data) {
+        throw new UnauthorizedException();
+      }
+
+      if (Object.keys(body.details).length === 0) return;
+
+      const customer = await this.sellerService.findById(Number(sellerId));
+
+      if (customer.user.user_type === UserType.Seller) {
+        const updatedSeller = await this.sellerService.verifyPhoneNumber(Number(sellerId));
+
+        await this.activityLogService.createActivityLog({title: 'verify-seller-number', description: `A seller named ${updatedSeller.first_name} ${updatedSeller.last_name} has verified its phone number.`, ip_address: ip});
+
+        return { message: 'Verified Phone Number Successfully.' };
+      }
+    } catch (e) {
+      throw new UnauthorizedException();
+    }
+  }
+
   @Patch('deactivate/:seller_id')
   async deactivateSeller(@Param('seller_id') sellerId, @Req() request) {
     try {

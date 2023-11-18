@@ -251,6 +251,38 @@ export class CustomerController {
     }
   }
 
+  @Patch('verify-contact-number/:customer_id')
+  async verifyCustomerContactNumber(
+    @Body() body: any,
+    @Param('customer_id') customerId,
+    @Req() request,
+    @Ip() ip
+  ) {
+    try {
+      const cookie = request.cookies['user_token'];
+
+      const data = await this.jwtService.verifyAsync(cookie);
+
+      if (!data) {
+        throw new UnauthorizedException();
+      }
+
+      if (Object.keys(body.details).length === 0) return;
+
+      const customer = await this.customerService.findById(Number(customerId));
+
+      if (customer.user.user_type === UserType.Customer) {
+        const updatedCustomer = await this.customerService.verifyPhoneNumber(Number(customerId));
+
+        await this.activityLogService.createActivityLog({title: 'verify-customer-number', description: `A customer named ${updatedCustomer.first_name} ${updatedCustomer.last_name} has verified its phone number.`, ip_address: ip});
+
+        return { message: 'Verified Phone Number Successfully.' };
+      }
+    } catch (e) {
+      throw new UnauthorizedException();
+    }
+  }
+
   @Patch('deactivate/:customer_id')
   async deactivateCustomer(@Param('customer_id') customerId, @Req() request) {
     try {

@@ -47,10 +47,14 @@ export class ProductService {
     const lowercaseTitle = product.name.toLowerCase();
 
     // Replace special characters with empty strings using a regular expression
-    const withoutSpecialChars = lowercaseTitle.replace(/[^\w\s-]/g, '');
+    const withoutSpecialChars = lowercaseTitle.replace(/\s+/g, "-");
 
     // Replace spaces with hyphens
-    const productSlug = withoutSpecialChars.replace(/\s+/g, '-');
+    const removeExtraSpecialChars = withoutSpecialChars.toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/-\&-/g, "-");
+
+    const productSlug = removeExtraSpecialChars.replace(/[^a-z0-9-]/g, "");
 
     product.slug = productSlug;
 
