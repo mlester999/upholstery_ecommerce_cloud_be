@@ -52,7 +52,9 @@ export class SellerBalanceService {
   async findAllSellerBalance(): Promise<SellerBalance[]> {
     return this.sellerBalanceRepository.find({
       relations: {
-        shop: true,
+        shop: {
+          seller: true
+        },
         product: true,
       },
     });
@@ -62,7 +64,9 @@ export class SellerBalanceService {
     return this.sellerBalanceRepository.findOne({
       where: { id },
       relations: {
-        shop: true,
+        shop: {
+          seller: true
+        },
         product: true,
       },
     });
@@ -77,7 +81,9 @@ export class SellerBalanceService {
         is_active: 1,
       },
       relations: {
-        shop: true,
+        shop: {
+          seller: true
+        },
         product: true,
       },
     });
