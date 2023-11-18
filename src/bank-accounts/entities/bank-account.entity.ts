@@ -12,7 +12,7 @@ import {
 } from 'typeorm';
 
 @Entity()
-export class Shop {
+export class BankAccount {
   @PrimaryGeneratedColumn()
   id: number;
 
@@ -21,11 +21,17 @@ export class Shop {
   @JoinColumn() // Specify the name of the foreign key column in Seller
   seller: Seller; // Create a property to access the related Seller entity
 
-  @Column({ type: 'varchar', length: 100 })
+  @Column({
+    type: 'enum',
+    enum: ['GCash', 'Grab Pay'],
+  })
   name: string;
 
-  @Column({ type: 'text' })
-  description: string;
+  @Column({ type: 'varchar', length: 11 })
+  contact_number: string;
+
+  @Column({ type: 'timestamp', nullable: true })
+  contact_number_verified_at: Date;
 
   @Column({ type: 'enum', enum: ActiveType })
   is_active: number;

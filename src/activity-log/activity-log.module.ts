@@ -13,6 +13,7 @@ import { ProductModule } from 'src/product/product.module';
 import { OrderModule } from 'src/order/order.module';
 import { CustomerModule } from 'src/customer/customer.module';
 import { ReturnRefundModule } from 'src/return-refund/return-refund.module';
+import { BankAccountsModule } from 'src/bank-accounts/bank-accounts.module';
 
 @Module({
   imports: [
@@ -23,6 +24,7 @@ import { ReturnRefundModule } from 'src/return-refund/return-refund.module';
     ProductModule,
     OrderModule,
     ReturnRefundModule,
+    BankAccountsModule,
     TypeOrmModule.forFeature([ActivityLog]),
     PassportModule.register({ defaultStrategy: 'jwt', session: false }),
     JwtModule.register({

@@ -138,8 +138,13 @@ export class ShopController {
 
       if (Object.keys(body.details).length === 0) return;
 
-      let seller;
       const shop = await this.shopService.findById(shopId);
+
+      if (!shop) {
+        throw new BadRequestException('No Shop Found.');
+      }
+
+      let seller;
 
       if (body.details.seller_id) {
         seller = await this.sellerService.findById(body.details.seller_id);
@@ -157,10 +162,22 @@ export class ShopController {
             'Seller has already existing shop. You can deactivate the existing shop and create a new one.',
           );
         }
-      }
+      } else {
+        seller = await this.sellerService.findById(shop.seller.id);
 
-      if (!shop) {
-        throw new BadRequestException('No Shop Found.');
+        if (!seller) {
+          throw new BadRequestException('No Seller Found.');
+        }
+  
+        const hasExistingShop = await this.shopService.findBySellerId(
+          seller.id,
+        );
+  
+        if (hasExistingShop && body.details.id !== hasExistingShop.id && body.details.is_active) {
+          throw new BadRequestException(
+            'Seller has already existing shop. You can deactivate the existing shop and create a new one.',
+          );
+        }
       }
 
       const updatedShop = await this.shopService.updateShop(body, parseInt(shopId), seller);

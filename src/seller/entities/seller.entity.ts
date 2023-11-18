@@ -11,7 +11,6 @@ import {
 } from 'typeorm';
 
 @Entity()
-@Unique(['contact_number'])
 export class Seller {
   /**
    * this decorator will help to auto generate id for the table.
@@ -43,7 +42,7 @@ export class Seller {
   @Column({ type: 'date' })
   birth_date: Date;
 
-  @Column({ type: 'varchar', length: 11 })
+  @Column({ type: 'varchar', length: 11, unique: true })
   contact_number: string;
 
   @Column({ type: 'timestamp', nullable: true })

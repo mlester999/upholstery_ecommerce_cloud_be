@@ -30,6 +30,9 @@ import { ReturnRefundModule } from './return-refund/return-refund.module';
 import { ReturnRefund } from './return-refund/entities/return-refund.entity';
 import { SemaphoreModule } from './semaphore/semaphore.module';
 import { ConfigModule } from '@nestjs/config';
+import { BankAccountsModule } from './bank-accounts/bank-accounts.module';
+import { SellerBalanceModule } from './seller-balance/seller-balance.module';
+import { BankAccount } from './bank-accounts/entities/bank-account.entity';
 
 @Module({
   imports: [
@@ -51,6 +54,7 @@ import { ConfigModule } from '@nestjs/config';
         Voucher,
         Shop,
         ReturnRefund,
+        BankAccount,
         ActivityLog
       ],
       database: 'upholstery-ecommerce',
@@ -74,6 +78,8 @@ import { ConfigModule } from '@nestjs/config';
     ActivityLogModule,
     ReturnRefundModule,
     SemaphoreModule,
+    BankAccountsModule,
+    SellerBalanceModule,
   ],
   controllers: [AppController],
   providers: [AppService],

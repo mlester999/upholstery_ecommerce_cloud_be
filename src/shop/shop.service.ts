@@ -99,9 +99,9 @@ export class ShopService {
    * @returns promise of update shop
    */
   async updateShop(body: any, id: number, seller: Seller): Promise<Shop> {
-    const shop = await this.shopRepository.findOneBy({
+    const shop = await this.findById(
       id,
-    });
+    );
 
     if (!shop) {
       throw new NotFoundException(`Shop not found`);
@@ -117,6 +117,10 @@ export class ShopService {
 
     if (body.details.description) {
       shop.description = body.details.description;
+    }
+
+    if (body.details.is_active) {
+      shop.is_active = body.details.is_active;
     }
 
     return await this.shopRepository.save(shop);
