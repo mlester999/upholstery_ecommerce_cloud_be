@@ -142,9 +142,11 @@ export class OrderController {
       let totalPrice = 0;
       let totalQuantity = 0;
 
+      const randomOrderId = randomUuid(14, 'ALPHANUM');
+
       const orderedProducts = await Promise.all(
         body.details.products.map(async (el, index) => {
-          const product = await this.productService.findById(Number(el));
+          const product = await this.productService.findById(Number(el.id));
 
           if (!product) {
             throw new BadRequestException('No Product Found.');
@@ -158,8 +160,8 @@ export class OrderController {
 
           const orderedProduct = {
             ...product,
-            price: product.price * Number(body.details.quantity[index]),
-            quantity: Number(body.details.quantity[index]),
+            price: product.price * Number(el.quantity),
+            quantity: Number(el.quantity),
             status: 'Processing',
           };
 
@@ -170,11 +172,11 @@ export class OrderController {
 
           const sellerBalanceId = randomUuid(14, 'ALPHANUM');
 
-          await this.sellerBalanceService.createSellerBalance(details, sellerBalanceId, shop, product);
+          await this.sellerBalanceService.createSellerBalance(details, sellerBalanceId, randomOrderId, shop, product);
 
           await this.productService.decreaseProductQuantity(
-            Number(el),
-            body.details.quantity[index],
+            Number(el.id),
+            el.quantity,
           );
 
           return orderedProduct;
@@ -184,8 +186,6 @@ export class OrderController {
       if (orderedProducts.length === 0) {
         throw new BadRequestException('No Products Found.');
       }
-
-      const randomOrderId = randomUuid(14, 'ALPHANUM');
 
       const orderDetails = {
         order_id: randomOrderId,
@@ -244,7 +244,7 @@ export class OrderController {
       let totalPrice = 0;
       let totalQuantity = 0;
 
-  
+      const randomOrderId = randomUuid(14, 'ALPHANUM');
 
       const orderedProducts = await Promise.all(
         body.details.product_list.map(async (el, index) => {
@@ -274,7 +274,7 @@ export class OrderController {
 
           const details = {amount: orderedProduct.price, status: SellerBalanceStatusType.Pending, is_active: ActiveType.Active}
 
-          await this.sellerBalanceService.createSellerBalance(details, sellerBalanceId, shop, product);
+          await this.sellerBalanceService.createSellerBalance(details, sellerBalanceId, randomOrderId, shop, product);
 
           await this.productService.decreaseProductQuantity(
             Number(el.id),
@@ -288,8 +288,6 @@ export class OrderController {
       if (orderedProducts.length === 0) {
         throw new BadRequestException('No Products Found.');
       }
-
-      const randomOrderId = randomUuid(14, 'ALPHANUM');
 
       const orderDetails = {
         order_id: randomOrderId,
@@ -340,7 +338,7 @@ export class OrderController {
   }
 
   @Patch('order-received')
-  async orderReceived(@Body() body: any, @Req() request) {
+  async orderReceived(@Body() body: any, @Req() request, @Ip() ip) {
     try {
       const cookie = request.cookies['user_token'];
 
@@ -374,6 +372,99 @@ export class OrderController {
                 status: product.status,
                 order_received: OrderReceivedType.OrderReceived
               };
+
+              const sellerBalance = await this.sellerBalanceService.findByOrderId(order.order_id, product.id, product.shop.id);
+
+              if (!sellerBalance) {
+                throw new BadRequestException('No Seller Balance Found.');
+              }
+
+              await this.sellerBalanceService.updateStatus('Completed', sellerBalance.id);
+
+              await this.activityLogService.createActivityLog({title: 'customer-received-order', description: `A customer named ${order.customer.first_name} ${order.customer.last_name} already receive the product ${originalProduct.name} in our e-commerce website. The order id is ${order.order_id}`, ip_address: ip});
+  
+              return orderedProduct;
+
+            } else {
+              const orderedProduct = {
+                ...originalProduct,
+                price: product.price,
+                quantity: product.quantity,
+                status: product.status,
+                order_received: product.order_received ?? OrderReceivedType.OrderPending
+              };
+  
+              return orderedProduct;
+            }
+          }),
+        );
+
+        if (orderedProducts.length === 0) {
+          throw new BadRequestException('No Products Found.');
+        }
+
+        const orderDetails = {
+          products: orderedProducts,
+        };
+
+        await this.orderService.updateOrder(orderDetails, parseInt(body.details.order_id));
+
+      return {
+        message: 'Order Received Successfully.'
+      };
+    } catch (e) {
+      console.log(e);
+      throw new UnauthorizedException();
+    }
+  }
+
+  @Patch('order-cancelled')
+  async orderCancelled(@Body() body: any, @Req() request, @Ip() ip) {
+    try {
+      const cookie = request.cookies['user_token'];
+
+      const data = await this.jwtService.verifyAsync(cookie);
+
+      if (!data) {
+        throw new UnauthorizedException();
+      }
+
+        const order = await this.orderService.findById(body.details.order_id);
+
+        if (!order) {
+          throw new BadRequestException('No Order Found.');
+        }
+
+        const orderedProducts = await Promise.all(
+          JSON.parse(order.products).map(async (product, index) => {
+            const originalProduct = await this.productService.findById(
+              Number(product.id),
+            );
+
+            if (!originalProduct) {
+              throw new BadRequestException('No Product Found.');
+            }
+            
+            if (originalProduct.id == body.details.product_id) {
+              const orderedProduct = {
+                ...originalProduct,
+                price: product.price,
+                quantity: product.quantity,
+                status: 'Cancelled',
+                order_received: OrderReceivedType.OrderPending
+              };
+
+              console.log(body.details.order_id);
+
+              const sellerBalance = await this.sellerBalanceService.findByOrderId(order.order_id, product.id, product.shop.id);
+
+              if (!sellerBalance) {
+                throw new BadRequestException('No Seller Balance Found.');
+              }
+
+              await this.sellerBalanceService.updateStatus('Cancelled', sellerBalance.id);
+
+              await this.activityLogService.createActivityLog({title: 'customer-cancelled-order', description: `A customer named ${order.customer.first_name} ${order.customer.last_name} cancelled its order of ${originalProduct.name} in our e-commerce website. The order id is ${order.order_id}`, ip_address: ip});
   
               return orderedProduct;
 

@@ -88,7 +88,7 @@ export class SellerBalanceController {
 
       const sellerBalanceId = randomUuid(14, 'ALPHANUM');
 
-      const createdSellerBalance = await this.sellerBalanceService.createSellerBalance(body.details, sellerBalanceId, shop, product);
+      const createdSellerBalance = await this.sellerBalanceService.createSellerBalance(body.details, sellerBalanceId, body.details.order_id, shop, product);
 
       await this.activityLogService.createActivityLog({title: 'add-seller-balance', description: `A shop named ${createdSellerBalance.shop.name} has a pending seller balance from a customer's order.`, ip_address: ip});
 

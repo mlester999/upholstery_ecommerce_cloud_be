@@ -27,6 +27,9 @@ export class SellerBalance {
   @Column({ type: 'varchar', length: 15 })
   seller_balance_id: string;
 
+  @Column({ type: 'varchar', length: 15, nullable: true })
+  order_id: string;
+
   // Define the one-to-one relationship with Seller
   @ManyToOne(() => Shop)
   @JoinColumn() // Specify the name of the foreign key column in Shop

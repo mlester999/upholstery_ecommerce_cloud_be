@@ -30,6 +30,7 @@ export class SellerBalanceService {
   async createSellerBalance(
     createSellerBalanceDto: CreateSellerBalanceDto,
     sellerBalanceId: string,
+    orderId: string,
     shop: Shop,
     product: Product,
   ): Promise<SellerBalance> {
@@ -37,6 +38,7 @@ export class SellerBalanceService {
 
     sellerBalance.shop = shop;
     sellerBalance.product = product;
+    sellerBalance.order_id = orderId;
     sellerBalance.seller_balance_id = sellerBalanceId;
     sellerBalance.amount = createSellerBalanceDto.amount;
     sellerBalance.status = SellerBalanceStatusType.Pending;
@@ -79,6 +81,26 @@ export class SellerBalanceService {
           id,
         },
         is_active: 1,
+      },
+      relations: {
+        shop: {
+          seller: true
+        },
+        product: true,
+      },
+    });
+  }
+
+  async findByOrderId(order_id: string, product_id: number, shop_id: number): Promise<SellerBalance | undefined> {
+    return this.sellerBalanceRepository.findOne({
+      where: {
+        order_id,
+        shop: {
+          id: shop_id
+        },
+        product: {
+          id: product_id
+        }
       },
       relations: {
         shop: {
@@ -132,6 +154,22 @@ export class SellerBalanceService {
 
     if (body.details.is_active) {
       sellerBalance.is_active = body.details.is_active;
+    }
+
+    return await this.sellerBalanceRepository.save(sellerBalance);
+  }
+
+  async updateStatus(status: string, id: number): Promise<SellerBalance> {
+    const sellerBalance = await this.findById(
+      id,
+    );
+
+    if (!sellerBalance) {
+      throw new NotFoundException(`Seller Balance not found`);
+    }
+
+    if (status) {
+      sellerBalance.status = status;
     }
 
     return await this.sellerBalanceRepository.save(sellerBalance);
