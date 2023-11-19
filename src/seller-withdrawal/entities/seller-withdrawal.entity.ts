@@ -12,46 +12,32 @@ import {
   ManyToOne,
 } from 'typeorm';
 
-export enum SellerBalanceStatusType {
-    Pending = 'Pending',
-    Cancelled = 'Cancelled',
-    Completed = 'Completed',
+export enum SellerWithdrawalStatusType {
     PendingWithdrawal = 'Pending Withdrawal',
     ProcessedWithdrawal = 'Processed Withdrawal',
   }
 
 @Entity()
-export class SellerBalance {
+export class SellerWithdrawal {
   @PrimaryGeneratedColumn()
   id: number;
 
   @Column({ type: 'varchar', length: 15 })
-  seller_balance_id: string;
-
-  @Column({ type: 'varchar', length: 15, nullable: true })
-  order_id: string;
+  seller_withdrawal_id: string;
 
   // Define the one-to-one relationship with Seller
   @ManyToOne(() => Shop)
   @JoinColumn() // Specify the name of the foreign key column in Shop
   shop: Shop; // Create a property to access the related Shop entity
 
-  // Define the one-to-one relationship with Seller
-  @ManyToOne(() => Product)
-  @JoinColumn() // Specify the name of the foreign key column in Seller
-  product: Product; // Create a property to access the related Seller entity
-
   @Column({ type: 'int' })
   amount: number;
 
   @Column({
   type: 'enum',
-  enum: SellerBalanceStatusType,
+  enum: SellerWithdrawalStatusType,
   })
   /**
-   * Pending - Pending
-   * Cancelled - Cancelled
-   * Completed - Completed
    * PendingWithdrawal - Pending Withdrawal
    * ProcessedWithdrawal - Processed Withdrawal
    */

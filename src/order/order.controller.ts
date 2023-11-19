@@ -379,7 +379,7 @@ export class OrderController {
                 throw new BadRequestException('No Seller Balance Found.');
               }
 
-              await this.sellerBalanceService.updateStatus('Completed', sellerBalance.id);
+              await this.sellerBalanceService.updateStatus(SellerBalanceStatusType.Completed, sellerBalance.id);
 
               await this.activityLogService.createActivityLog({title: 'customer-received-order', description: `A customer named ${order.customer.first_name} ${order.customer.last_name} already receive the product ${originalProduct.name} in our e-commerce website. The order id is ${order.order_id}`, ip_address: ip});
   
@@ -454,15 +454,13 @@ export class OrderController {
                 order_received: OrderReceivedType.OrderPending
               };
 
-              console.log(body.details.order_id);
-
               const sellerBalance = await this.sellerBalanceService.findByOrderId(order.order_id, product.id, product.shop.id);
 
               if (!sellerBalance) {
                 throw new BadRequestException('No Seller Balance Found.');
               }
 
-              await this.sellerBalanceService.updateStatus('Cancelled', sellerBalance.id);
+              await this.sellerBalanceService.updateStatus(SellerBalanceStatusType.Cancelled, sellerBalance.id);
 
               await this.activityLogService.createActivityLog({title: 'customer-cancelled-order', description: `A customer named ${order.customer.first_name} ${order.customer.last_name} cancelled its order of ${originalProduct.name} in our e-commerce website. The order id is ${order.order_id}`, ip_address: ip});
   

@@ -62,6 +62,18 @@ export class SellerBalanceService {
     });
   }
 
+  async findAllCompletedSellerBalance(): Promise<SellerBalance[]> {
+    return this.sellerBalanceRepository.find({
+      where: { status: SellerBalanceStatusType.Completed },
+      relations: {
+        shop: {
+          seller: true
+        },
+        product: true,
+      },
+    });
+  }
+
   async findById(id: number): Promise<SellerBalance | undefined> {
     return this.sellerBalanceRepository.findOne({
       where: { id },
