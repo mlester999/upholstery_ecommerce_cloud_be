@@ -39,6 +39,20 @@ export class BankAccountsService {
     return this.bankAccountRepository.save(bankAccount);
   }
 
+  async createUnverifiedBankAccount(
+    createBankAccountDto: CreateBankAccountDto,
+    seller: Seller,
+  ): Promise<BankAccount> {
+    const bankAccount: BankAccount = new BankAccount();
+
+    bankAccount.seller = seller;
+    bankAccount.name = createBankAccountDto.name;
+    bankAccount.contact_number = createBankAccountDto.contact_number;
+    bankAccount.is_active = ActiveType.Active;
+
+    return this.bankAccountRepository.save(bankAccount);
+  }
+
   /**
    * this function is used to get all the bankAccount's list
    * @returns promise of array of bankAccounts

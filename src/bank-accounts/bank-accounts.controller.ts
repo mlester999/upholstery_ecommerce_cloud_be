@@ -120,6 +120,51 @@ export class BankAccountsController {
     }
   }
 
+  @Post('add-unverified')
+  async addUnverifiedBankAccount(@Body() body: any, @Req() request, @Ip() ip) {
+    try {
+      const cookie = request.cookies['user_token'];
+
+      const data = await this.jwtService.verifyAsync(cookie);
+
+      if (!data) {
+        throw new UnauthorizedException();
+      }
+
+      if (Object.keys(body.details).length === 0) return;
+
+      const seller = await this.sellerService.findById(Number(body.details.seller_id));
+
+      if (!seller) {
+        throw new BadRequestException('No Seller Found.');
+      }
+
+      const hasExistingBankAccount = await this.bankAccountsService.findBySellerId(Number(seller.id));
+
+      if (hasExistingBankAccount) {
+        throw new BadRequestException(
+          'Seller has already existing bank account. You can deactivate the existing bank account and create a new one.',
+        );
+      }
+
+      const createdBankAccount = await this.bankAccountsService.createBankAccount(body.details, seller);
+
+      await this.activityLogService.createActivityLog({title: 'add-bank-account', description: `A seller named ${createdBankAccount.seller.first_name} ${createdBankAccount.seller.last_name} addded a bank account for its shop.`, ip_address: ip});
+
+      return { message: 'Added Bank Account Successfully.' };
+    } catch (e) {
+      if (
+        e.response.message ===
+        'Seller has already existing bank account. You can deactivate the existing bank account and create a new one.'
+      ) {
+        throw new BadRequestException(
+          'Seller has already existing bank account. You can deactivate the existing bank account and create a new one.',
+        );
+      }
+      throw new UnauthorizedException();
+    }
+  }
+
   @Patch('update/:bank_account_id')
   async updateBankAccount(
     @Body() body: any,
@@ -224,12 +269,30 @@ export class BankAccountsController {
         throw new BadRequestException('No Bank Account Found.');
       }
 
+      const hasExistingBankAccount = await this.bankAccountsService.findBySellerId(
+        bankAccount.seller.id,
+      );
+
+      if (hasExistingBankAccount && bankAccountId != hasExistingBankAccount.id) {
+        throw new BadRequestException(
+          'Seller has already existing bank account. You can deactivate the existing bank account and create a new one.',
+        );
+      }
+
       await this.bankAccountsService.activateBankAccount(Number(bankAccount.id));
 
       return { message: 'Activated Bank Account Successfully.' };
     } catch (e) {
       if (e.response.message === 'No Bank Account Found.') {
         throw new BadRequestException('No Bank Account Found.');
+      }
+      if (
+        e.response.message ===
+        'Seller has already existing bank account. You can deactivate the existing bank account and create a new one.'
+      ) {
+        throw new BadRequestException(
+          'Seller has already existing bank account. You can deactivate the existing bank account and create a new one.',
+        );
       }
       throw new UnauthorizedException();
     }

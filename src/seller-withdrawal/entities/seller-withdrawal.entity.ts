@@ -1,5 +1,4 @@
-import { Product } from 'src/product/entities/product.entity';
-import { Shop } from 'src/shop/entities/shop.entity';
+import { Seller } from 'src/seller/entities/seller.entity';
 import { ActiveType } from 'src/user/entities/user.entity';
 import {
   Column,
@@ -26,9 +25,9 @@ export class SellerWithdrawal {
   seller_withdrawal_id: string;
 
   // Define the one-to-one relationship with Seller
-  @ManyToOne(() => Shop)
-  @JoinColumn() // Specify the name of the foreign key column in Shop
-  shop: Shop; // Create a property to access the related Shop entity
+  @ManyToOne(() => Seller)
+  @JoinColumn() // Specify the name of the foreign key column in Seller
+  seller: Seller; // Create a property to access the related Seller entity
 
   @Column({ type: 'int' })
   amount: number;

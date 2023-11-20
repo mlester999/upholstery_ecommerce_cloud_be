@@ -146,13 +146,13 @@ export class OrderController {
 
       const orderedProducts = await Promise.all(
         body.details.products.map(async (el, index) => {
-          const product = await this.productService.findById(Number(el.id));
+          const product = await this.productService.findById(Number(el));
 
           if (!product) {
             throw new BadRequestException('No Product Found.');
           }
 
-          const shop = await this.shopService.findById(Number(el.shop_id));
+          const shop = await this.shopService.findById(Number(body.details.shops[index]));
 
           if (!shop) {
             throw new BadRequestException('No Shop Found.');
@@ -160,8 +160,8 @@ export class OrderController {
 
           const orderedProduct = {
             ...product,
-            price: product.price * Number(el.quantity),
-            quantity: Number(el.quantity),
+            price: product.price * Number(body.details.quantity[index]),
+            quantity: Number(body.details.quantity[index]),
             status: 'Processing',
           };
 
@@ -175,8 +175,8 @@ export class OrderController {
           await this.sellerBalanceService.createSellerBalance(details, sellerBalanceId, randomOrderId, shop, product);
 
           await this.productService.decreaseProductQuantity(
-            Number(el.id),
-            el.quantity,
+            Number(el),
+            body.details.quantity[index],
           );
 
           return orderedProduct;

@@ -13,17 +13,17 @@ import { BadRequestException } from '@nestjs/common/exceptions';
 import { JwtService } from '@nestjs/jwt';
 import { ActivityLogService } from 'src/activity-log/activity-log.service';
 import { SellerWithdrawalService } from './seller-withdrawal.service';
-import { ShopService } from 'src/shop/shop.service';
 import { randomUuid } from '../../utils/generateUuid';
 import { SellerBalanceService } from 'src/seller-balance/seller-balance.service';
 import { SellerBalanceStatusType } from 'src/seller-balance/entities/seller-balance.entity';
+import { SellerService } from 'src/seller/seller.service';
 
 @Controller('seller-withdrawal')
 export class SellerWithdrawalController {
   constructor(
     private readonly sellerWithdrawalService: SellerWithdrawalService,
     private readonly sellerBalanceService: SellerBalanceService,
-    private readonly shopService: ShopService,
+    private readonly sellerService: SellerService,
     private readonly activityLogService: ActivityLogService,
     private readonly jwtService: JwtService,
   ) {}
@@ -75,10 +75,10 @@ export class SellerWithdrawalController {
 
       if (Object.keys(body.details).length === 0) return;
 
-      const shop = await this.shopService.findById(Number(body.details.shop_id));
+      const seller = await this.sellerService.findById(Number(body.details.seller_id));
 
-      if (!shop) {
-        throw new BadRequestException('No Shop Found.');
+      if (!seller) {
+        throw new BadRequestException('No Seller Found.');
       }
 
       const sellerWithdrawalId = randomUuid(14, 'ALPHANUM');
@@ -89,9 +89,9 @@ export class SellerWithdrawalController {
         await this.sellerBalanceService.updateStatus(SellerBalanceStatusType.PendingWithdrawal, el.id);
       }))
       
-      const createdSellerWithdrawal = await this.sellerWithdrawalService.createSellerWithdrawal(body.details, sellerWithdrawalId, shop);
+      const createdSellerWithdrawal = await this.sellerWithdrawalService.createSellerWithdrawal(body.details, sellerWithdrawalId, seller);
 
-      await this.activityLogService.createActivityLog({title: 'add-seller-withdrawal', description: `A shop named ${createdSellerWithdrawal.shop.name} has withdrawn the balance on its account.`, ip_address: ip});
+      await this.activityLogService.createActivityLog({title: 'add-seller-withdrawal', description: `A seller named ${createdSellerWithdrawal.seller.first_name} ${createdSellerWithdrawal.seller.last_name} has withdrawn the balance on its account.`, ip_address: ip});
 
       return { message: 'Added Seller Withdrawal Successfully.' };
     } catch (e) {
@@ -124,19 +124,19 @@ export class SellerWithdrawalController {
         throw new BadRequestException('No Seller Balance Found.');
       }
 
-      let shop;
+      let seller;
 
-      if(body.details.shop_id) {
-        shop = await this.shopService.findById(body.details.shop_id);
+      if(body.details.seller_id) {
+        seller = await this.sellerService.findById(body.details.seller_id);
 
-        if (!shop) {
+        if (!seller) {
           throw new BadRequestException('No Seller Found.');
         }
       }
 
-      const updatedSellerWithdrawal = await this.sellerWithdrawalService.updateSellerWithdrawal(body, sellerWithdrawalId, shop);
+      const updatedSellerWithdrawal = await this.sellerWithdrawalService.updateSellerWithdrawal(body, sellerWithdrawalId, seller);
 
-      await this.activityLogService.createActivityLog({title: 'update-seller-withdrawal', description: `A shop named ${updatedSellerWithdrawal.shop.name} has an update to its withdrawn balance from its account.`, ip_address: ip});
+      await this.activityLogService.createActivityLog({title: 'update-seller-withdrawal', description: `A seller named ${updatedSellerWithdrawal.seller.first_name} ${updatedSellerWithdrawal.seller.last_name} has an update to its withdrawn balance from its account.`, ip_address: ip});
 
       return { message: 'Updated Seller Withdrawal Successfully.' };
     } catch (e) {

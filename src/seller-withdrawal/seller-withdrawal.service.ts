@@ -30,11 +30,11 @@ export class SellerWithdrawalService {
   async createSellerWithdrawal(
     createSellerWithdrawalDto: CreateSellerWithdrawalDto,
     sellerWithdrawalId: string,
-    shop: Shop,
+    seller: Seller,
   ): Promise<SellerWithdrawal> {
     const sellerWithdrawal: SellerWithdrawal = new SellerWithdrawal();
 
-    sellerWithdrawal.shop = shop;
+    sellerWithdrawal.seller = seller;
     sellerWithdrawal.seller_withdrawal_id = sellerWithdrawalId;
     sellerWithdrawal.amount = createSellerWithdrawalDto.amount;
     sellerWithdrawal.status = SellerWithdrawalStatusType.PendingWithdrawal;
@@ -50,10 +50,7 @@ export class SellerWithdrawalService {
   async findAllSellerWithdrawal(): Promise<SellerWithdrawal[]> {
     return this.sellerWithdrawalRepository.find({
       relations: {
-        shop: {
           seller: true
-        },
-
       },
     });
   }
@@ -62,27 +59,21 @@ export class SellerWithdrawalService {
     return this.sellerWithdrawalRepository.findOne({
       where: { id },
       relations: {
-        shop: {
           seller: true
-        },
-
       },
     });
   }
 
-  async findByShopId(id: number): Promise<SellerWithdrawal | undefined> {
+  async findBySellerId(id: number): Promise<SellerWithdrawal | undefined> {
     return this.sellerWithdrawalRepository.findOne({
       where: {
-        shop: {
+        seller: {
           id,
         },
         is_active: 1,
       },
       relations: {
-        shop: {
-          seller: true
-        },
-
+        seller: true
       },
     });
   }
@@ -103,7 +94,7 @@ export class SellerWithdrawalService {
    * @param updateSellerWithdrawalDto this is partial type of createSellerWithdrawalDto.
    * @returns promise of update sellerWithdrawal
    */
-  async updateSellerWithdrawal(body: any, id: number, shop: Shop): Promise<SellerWithdrawal> {
+  async updateSellerWithdrawal(body: any, id: number, seller: Seller): Promise<SellerWithdrawal> {
     const sellerWithdrawal = await this.findById(
       id,
     );
@@ -112,8 +103,8 @@ export class SellerWithdrawalService {
       throw new NotFoundException(`Seller Withdrawal not found`);
     }
 
-    if (shop) {
-      sellerWithdrawal.shop = shop;
+    if (seller) {
+      sellerWithdrawal.seller = seller;
     }
 
     if (body.details.amount) {
