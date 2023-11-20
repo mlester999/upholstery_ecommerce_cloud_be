@@ -6,19 +6,21 @@ import {
     IsString,
   } from 'class-validator';
   import { ActiveType } from 'src/user/entities/user.entity';
-import { SellerWithdrawalStatusType } from '../entities/seller-withdrawal.entity';
+
   
-  export class CreateSellerWithdrawalDto {
+  export class CreateReviewDto {
+    @IsString()
+    @IsNotEmpty()
+    comments: string;
+
+    @IsNumber()
+    @IsNotEmpty()
+    ratings: number;
+
     @IsNumber()
     @IsNotEmpty()
     amount: number;
-
-    @IsString()
-    @IsEnum(SellerWithdrawalStatusType)
-    @IsNotEmpty()
-    status: string;
   
-    @IsNotEmpty()
     @IsNumber()
     @IsEnum(ActiveType)
     is_active: number;

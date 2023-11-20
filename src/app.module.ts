@@ -36,6 +36,8 @@ import { BankAccount } from './bank-accounts/entities/bank-account.entity';
 import { SellerBalance } from './seller-balance/entities/seller-balance.entity';
 import { SellerWithdrawalModule } from './seller-withdrawal/seller-withdrawal.module';
 import { SellerWithdrawal } from './seller-withdrawal/entities/seller-withdrawal.entity';
+import { ReviewModule } from './review/review.module';
+import { Review } from './review/entities/review.entity';
 
 @Module({
   imports: [
@@ -60,6 +62,7 @@ import { SellerWithdrawal } from './seller-withdrawal/entities/seller-withdrawal
         BankAccount,
         SellerBalance,
         SellerWithdrawal,
+        Review,
         ActivityLog
       ],
       database: 'upholstery-ecommerce',
@@ -86,6 +89,7 @@ import { SellerWithdrawal } from './seller-withdrawal/entities/seller-withdrawal
     BankAccountsModule,
     SellerBalanceModule,
     SellerWithdrawalModule,
+    ReviewModule,
   ],
   controllers: [AppController],
   providers: [AppService],

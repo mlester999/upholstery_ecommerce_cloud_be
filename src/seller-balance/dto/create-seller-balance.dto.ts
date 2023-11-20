@@ -1,5 +1,6 @@
 import {
     IsEnum,
+    IsNotEmpty,
     IsNumber,
     IsOptional,
     IsString,
@@ -9,13 +10,15 @@ import { SellerBalanceStatusType } from '../entities/seller-balance.entity';
   
   export class CreateSellerBalanceDto {
     @IsNumber()
+    @IsNotEmpty()
     amount: number;
 
     @IsString()
     @IsEnum(SellerBalanceStatusType)
+    @IsNotEmpty()
     status: string;
   
-    @IsOptional()
+    @IsNotEmpty()
     @IsNumber()
     @IsEnum(ActiveType)
     is_active: number;

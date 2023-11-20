@@ -15,6 +15,8 @@ import { CustomerModule } from 'src/customer/customer.module';
 import { ReturnRefundModule } from 'src/return-refund/return-refund.module';
 import { BankAccountsModule } from 'src/bank-accounts/bank-accounts.module';
 import { SellerBalanceModule } from 'src/seller-balance/seller-balance.module';
+import { SellerWithdrawalModule } from 'src/seller-withdrawal/seller-withdrawal.module';
+import { ReviewModule } from 'src/review/review.module';
 
 @Module({
   imports: [
@@ -27,6 +29,8 @@ import { SellerBalanceModule } from 'src/seller-balance/seller-balance.module';
     ReturnRefundModule,
     BankAccountsModule,
     SellerBalanceModule,
+    SellerWithdrawalModule,
+    ReviewModule,
     TypeOrmModule.forFeature([ActivityLog]),
     PassportModule.register({ defaultStrategy: 'jwt', session: false }),
     JwtModule.register({

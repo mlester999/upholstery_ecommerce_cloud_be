@@ -12,11 +12,13 @@ import { Seller } from 'src/seller/entities/seller.entity';
 import { SellerService } from 'src/seller/seller.service';
 import { ActivityLogService } from 'src/activity-log/activity-log.service';
 import { ActivityLog } from 'src/activity-log/entities/activity-log.entity';
+import { ReviewModule } from 'src/review/review.module';
 
 @Module({
   imports: [
     AuthModule,
     ProductModule,
+    ReviewModule,
     TypeOrmModule.forFeature([Shop, Seller, ActivityLog]),
     PassportModule.register({ defaultStrategy: 'jwt', session: false }),
     JwtModule.register({

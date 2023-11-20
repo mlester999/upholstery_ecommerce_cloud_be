@@ -16,11 +16,13 @@ import { DoSpacesService } from 'src/spaces-module/spaces-service/doSpacesServic
 import { ActivityLogService } from 'src/activity-log/activity-log.service';
 import { ActivityLog } from 'src/activity-log/entities/activity-log.entity';
 import { ReturnRefundModule } from 'src/return-refund/return-refund.module';
+import { ReviewModule } from 'src/review/review.module';
 
 @Module({
   imports: [
     AuthModule,
     ReturnRefundModule,
+    ReviewModule,
     TypeOrmModule.forFeature([Product, Category, Shop, ActivityLog]),
     PassportModule.register({ defaultStrategy: 'jwt', session: false }),
     JwtModule.register({

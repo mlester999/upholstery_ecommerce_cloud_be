@@ -16,10 +16,11 @@ export class CreateBankAccountDto {
   name: string;
 
   @IsString()
+  @IsNotEmpty()
   @Matches(/^09\d{9}$/)
   contact_number: string;
 
-  @IsOptional()
+  @IsNotEmpty()
   @IsNumber()
   @IsEnum(ActiveType)
   is_active: number;
