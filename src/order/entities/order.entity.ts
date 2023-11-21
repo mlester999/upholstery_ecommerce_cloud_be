@@ -32,6 +32,11 @@ export enum OrderReceivedType {
   OrderNotReceived = 2,
 }
 
+export enum OrderReviewedType {
+  ReviewPending = 0,
+  ReviewCompleted = 1,
+}
+
 @Entity()
 export class Order {
   @PrimaryGeneratedColumn()

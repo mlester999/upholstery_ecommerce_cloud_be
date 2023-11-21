@@ -163,6 +163,7 @@ export class OrderController {
             price: product.price * Number(body.details.quantity[index]),
             quantity: Number(body.details.quantity[index]),
             status: 'Processing',
+            order_received: OrderReceivedType.OrderPending,
           };
 
           totalPrice += orderedProduct.price;
@@ -199,7 +200,6 @@ export class OrderController {
         price_discount: null,
         shipping_discount: null,
         discount_mode: null,
-        order_received: OrderReceivedType.OrderPending,
         is_active: ActiveType.Active,
       };
 
@@ -265,6 +265,7 @@ export class OrderController {
             price: product.price * Number(el.quantity),
             quantity: Number(el.quantity),
             status: 'Processing',
+            order_received: OrderReceivedType.OrderPending,
           };
 
           totalPrice += orderedProduct.price;
@@ -301,7 +302,6 @@ export class OrderController {
         price_discount: body.details.price_discount,
         shipping_discount: body.details.shipping_discount,
         discount_mode: body.details.discount_mode,
-        order_received: OrderReceivedType.OrderPending,
         is_active: ActiveType.Active,
       };
 
