@@ -78,6 +78,12 @@ export class CustomerService {
     });
   }
 
+  async findByContactNumber(contact_number: string): Promise<Customer | undefined> {
+    return this.customerRepository.findOne({
+      where: { contact_number }
+    });
+  }
+
   /**
    * this function used to get data of use whose id is passed in parameter
    * @param id is type of number, which represent the id of user.
@@ -87,6 +93,20 @@ export class CustomerService {
     return this.customerRepository.findOneBy({ id });
   }
 
+  async verifyPhoneNumber(id: number): Promise<Customer> {
+    const customer = await this.customerRepository.findOneBy({
+      id,
+    });
+
+    if (!customer) {
+      throw new NotFoundException(`Customer not found`);
+    }
+
+    customer.contact_number_verified_at = new Date();
+
+    return await this.customerRepository.save(customer);
+  }
+
   /**
    * this function is used to updated specific user whose id is passed in
    * parameter along with passed updated data
@@ -94,9 +114,9 @@ export class CustomerService {
    * @param updateUserDto this is partial type of createUserDto.
    * @returns promise of udpate user
    */
-  async updateCustomer(body: any, id: number): Promise<Customer> {
+  async updateCustomer(body: any): Promise<Customer> {
     const customer = await this.customerRepository.findOneBy({
-      id,
+      id: body.details.id,
     });
 
     if (!customer) {

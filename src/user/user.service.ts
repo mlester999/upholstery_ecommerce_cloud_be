@@ -39,6 +39,23 @@ export class UserService {
     return this.userRepository.save(user);
   }
 
+  async createNewUser(
+    createUserDto: CreateUserDto,
+    userType: number,
+  ): Promise<User> {
+    const user: User = new User();
+
+    user.email = createUserDto.email;
+    user.user_type = userType;
+    user.is_active = ActiveType.Active;
+
+    const salt = await bcrypt.genSalt();
+    const hashedPassword = await bcrypt.hash(createUserDto.password, salt);
+    user.password = hashedPassword;
+
+    return this.userRepository.save(user);
+  }
+
   /**
    * this function is used to get all the user's list
    * @returns promise of array of users

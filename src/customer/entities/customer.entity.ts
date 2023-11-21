@@ -6,6 +6,7 @@ import {
   JoinColumn,
   OneToOne,
   PrimaryGeneratedColumn,
+  Unique,
   UpdateDateColumn,
 } from 'typeorm';
 
@@ -41,8 +42,11 @@ export class Customer {
   @Column({ type: 'date' })
   birth_date: Date;
 
-  @Column({ type: 'varchar', length: 11 })
+  @Column({ type: 'varchar', length: 11, unique: true })
   contact_number: string;
+
+  @Column({ type: 'timestamp', nullable: true })
+  contact_number_verified_at: Date;
 
   @Column({ type: 'varchar', length: 100 })
   region: string;

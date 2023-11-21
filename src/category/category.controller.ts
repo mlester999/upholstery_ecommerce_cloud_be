@@ -36,6 +36,11 @@ export class CategoryController {
     }
   }
 
+  @Get('all-sorted')
+  async findAllSorted() {
+    return this.categoryService.findAllSortedCategory();
+  }
+
   @Get(':category_id')
   async findOne(@Req() request, @Param('category_id') categoryId) {
     try {

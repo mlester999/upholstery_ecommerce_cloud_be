@@ -11,23 +11,29 @@ import {
   UploadedFile,
   UnauthorizedException,
   UseInterceptors,
+  Ip,
 } from '@nestjs/common';
 import { BadRequestException } from '@nestjs/common/exceptions';
 import { JwtService } from '@nestjs/jwt';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { CategoryService } from 'src/category/category.service';
-import { SellerService } from 'src/seller/seller.service';
+import { ShopService } from 'src/shop/shop.service';
 import { ProductService } from './product.service';
+import { DoSpacesService } from 'src/spaces-module/spaces-service/doSpacesService';
 import { diskStorage } from 'multer';
 import * as path from 'path';
+import { UploadedMulterFileI } from 'src/spaces-module/spaces-service';
+import { ActivityLogService } from 'src/activity-log/activity-log.service';
 
 @Controller('product')
 export class ProductController {
   constructor(
     private readonly productService: ProductService,
     private readonly categoryService: CategoryService,
-    private readonly sellerService: SellerService,
+    private readonly shopService: ShopService,
+    private readonly activityLogService: ActivityLogService,
     private readonly jwtService: JwtService,
+    private readonly doSpacesService: DoSpacesService,
   ) {}
 
   @Get('all')
@@ -47,6 +53,11 @@ export class ProductController {
     }
   }
 
+  @Get('latest-products')
+  async findAllLatestProducts() {
+    return await this.productService.findLatestProducts();
+  }
+
   @Get(':product_id')
   async findOne(@Req() request, @Param('product_id') productId) {
     try {
@@ -64,37 +75,39 @@ export class ProductController {
     }
   }
 
+  @Get('/slug/:productSlug')
+  async findOneByOrderId(@Req() request, @Param('productSlug') productSlug) {
+    try {
+      const cookie = request.cookies['user_token'];
+
+      const data = await this.jwtService.verifyAsync(cookie);
+
+      if (!data) {
+        throw new UnauthorizedException();
+      }
+
+      console.log(productSlug)
+
+      return this.productService.findBySlug(productSlug);
+    } catch (e) {
+      throw new UnauthorizedException();
+    }
+  }
+
   @Post('add')
-  @UseInterceptors(
-    FileInterceptor('image_file', {
-      storage: diskStorage({
-        destination: (req, file, cb) => {
-          // Set the destination path to your public/assets folder
-          const uploadPath = path.resolve('../frontend/public/assets');
-          cb(null, uploadPath);
-        },
-        filename: (req, file, cb) => {
-          cb(null, `${file.originalname}`);
-        },
-      }),
-    }),
-  )
+  @UseInterceptors(FileInterceptor('image_file'))
   async addProduct(
     @Body() body: any,
     @Req() request,
-    @UploadedFile() file: Express.Multer.File,
+    @UploadedFile() file: UploadedMulterFileI,
+    @Ip() ip
   ) {
     try {
       const cookie = request.cookies['user_token'];
 
       const data = await this.jwtService.verifyAsync(cookie);
 
-      const newFileToRemove = path.resolve(
-        `../frontend/public/assets/${file.filename}`,
-      );
-
       if (!data) {
-        fs.unlinkSync(newFileToRemove);
         throw new UnauthorizedException();
       }
 
@@ -105,64 +118,58 @@ export class ProductController {
       const category = await this.categoryService.findById(details.category_id);
 
       if (!category) {
-        fs.unlinkSync(newFileToRemove);
         throw new BadRequestException('No Category Found.');
       }
 
-      const seller = await this.sellerService.findById(details.seller_id);
+      const shop = await this.shopService.findById(details.shop_id);
 
-      if (!seller) {
-        fs.unlinkSync(newFileToRemove);
-        throw new BadRequestException('No Seller Found.');
+      if (!shop) {
+        throw new BadRequestException('No Shop Found.');
       }
 
-      await this.productService.createProduct(details, file, category, seller);
+      const uploadedUrl = await this.doSpacesService.uploadFile(
+        file,
+        details.shop_id,
+        'products',
+      );
+
+      const createdProduct = await this.productService.createProduct(
+        details,
+        uploadedUrl,
+        category,
+        shop,
+      );
+
+      await this.activityLogService.createActivityLog({title: 'create-product', description: `A new product named ${createdProduct.name} was created by ${createdProduct.shop.seller.first_name} ${createdProduct.shop.seller.last_name} in its shop named ${createdProduct.shop.name}`, ip_address: ip});
 
       return { message: 'Created Product Successfully.' };
     } catch (e) {
-      throw new UnauthorizedException();
+      console.log(e);
+      if (e.response?.message === 'No Category Found.') {
+        throw new BadRequestException('No Category Found.');
+      } else if (e.response?.message === 'No Shop Found.') {
+        throw new BadRequestException('No Shop Found.');
+      } else {
+        throw new UnauthorizedException();
+      }
     }
   }
 
   @Patch('update/:product_id')
-  @UseInterceptors(
-    FileInterceptor('image_file', {
-      storage: diskStorage({
-        destination: (req, file, cb) => {
-          // Set the destination path to your public/assets folder
-          const uploadPath = path.resolve('../frontend/public/assets');
-          cb(null, uploadPath);
-        },
-        filename: (req, file, cb) => {
-          cb(null, `${file.originalname}`);
-        },
-      }),
-    }),
-  )
+  @UseInterceptors(FileInterceptor('image_file'))
   async updateProduct(
     @Body() body: any,
     @Param('product_id') productId,
     @Req() request,
-    @UploadedFile() file: Express.Multer.File,
+    @UploadedFile() file: UploadedMulterFileI,
+    @Ip() ip
   ) {
     try {
       const cookie = request.cookies['user_token'];
 
       const data = await this.jwtService.verifyAsync(cookie);
 
-      let newFileToRemove;
-
-      if (file?.filename) {
-        newFileToRemove = path.resolve(
-          `../frontend/public/assets/${file.filename}`,
-        );
-      }
-
       if (!data) {
-        if (file?.filename) {
-          fs.unlinkSync(newFileToRemove);
-        }
-
         throw new UnauthorizedException();
       }
 
@@ -171,48 +178,68 @@ export class ProductController {
       if (Object.keys(details).length <= 1) return;
 
       let category;
-      let seller;
+      let shop;
 
       if (details.category_id) {
         category = await this.categoryService.findById(details.category_id);
 
         if (!category) {
-          fs.unlinkSync(newFileToRemove);
           throw new BadRequestException('No Category Found.');
         }
       }
 
-      if (details.seller_id) {
-        seller = await this.sellerService.findById(details.seller_id);
+      if (details.shop_id) {
+        shop = await this.shopService.findById(details.shop_id);
 
-        if (!seller) {
-          fs.unlinkSync(newFileToRemove);
-          throw new BadRequestException('No Seller Found.');
+        if (!shop) {
+          throw new BadRequestException('No Shop Found.');
         }
       }
 
       const product = await this.productService.findById(productId);
 
       if (!product) {
-        fs.unlinkSync(newFileToRemove);
         throw new BadRequestException('No Product Found.');
       }
 
-      await this.productService.updateProduct(
-        details,
-        file,
-        parseInt(productId),
-        category,
-        seller,
-      );
+      let uploadedUrl;
 
-      if (file) {
-        const existingFileToRemove = path.resolve(
-          `../frontend/public/assets/${product.image_name}`,
+      if (details.image_file) {
+        await this.doSpacesService.removeFile(
+          `products/${product.shop.id}/${product.image_name}`,
         );
 
-        fs.unlinkSync(existingFileToRemove);
+        if (details.shop_id) {
+          uploadedUrl = await this.doSpacesService.uploadFile(
+            file,
+            details.shop_id,
+            'products',
+          );
+        } else {
+          uploadedUrl = await this.doSpacesService.uploadFile(
+            file,
+            product.shop.id,
+            'products',
+          );
+        }
+      } else if (details.shop_id) {
+        uploadedUrl = await this.doSpacesService.renameFolder(
+          'products',
+          product.shop.id,
+          details.shop_id,
+          product.image_name,
+        );
       }
+
+      const updatedProduct = await this.productService.updateProduct(
+        details,
+        uploadedUrl,
+        parseInt(productId),
+        category,
+        shop,
+      );
+
+      await this.activityLogService.createActivityLog({title: 'update-product', description: `A product named ${updatedProduct.name} was updated by ${updatedProduct.shop.seller.first_name} ${updatedProduct.shop.seller.last_name} in its shop named ${updatedProduct.shop.name}`, ip_address: ip});
 
       return { message: 'Updated product details successfully.' };
     } catch (e) {
@@ -239,7 +266,7 @@ export class ProductController {
 
       await this.productService.deactivateProduct(product.id);
 
-      return { message: 'Deactivated category successfully.' };
+      return { message: 'Deactivated product successfully.' };
     } catch (e) {
       if (e.response.message === 'No Product Found.') {
         throw new BadRequestException('No Product Found.');

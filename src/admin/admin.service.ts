@@ -4,7 +4,7 @@ import { Repository } from 'typeorm';
 import { CreateAdminDto } from './dto/create-admin.dto';
 import { UpdateAdminDto } from './dto/update-admin.dto';
 import { Admin } from './entities/admin.entity';
-import { User } from 'src/user/entities/user.entity';
+import { User, UserType } from 'src/user/entities/user.entity';
 
 @Injectable()
 export class AdminService {
@@ -45,6 +45,7 @@ export class AdminService {
    */
   async findAllAdmin(): Promise<Admin[]> {
     return this.adminRepository.find({
+      where: { user: { user_type: UserType.Admin } },
       relations: {
         user: true,
       },
@@ -53,7 +54,7 @@ export class AdminService {
 
   async findById(id: number): Promise<Admin | undefined> {
     return this.adminRepository.findOne({
-      where: { id },
+      where: { id, user: { user_type: UserType.Admin } },
       relations: {
         user: true,
       },
@@ -61,6 +62,30 @@ export class AdminService {
   }
 
   async findByEmail(email: string): Promise<Admin | undefined> {
+    return this.adminRepository.findOne({
+      where: { user: { email, user_type: UserType.Admin } },
+      relations: {
+        user: true,
+      },
+    });
+  }
+
+  async findByContactNumber(contact_number: string): Promise<Admin | undefined> {
+    return this.adminRepository.findOne({
+      where: { contact_number },
+    });
+  }
+
+  async findByIdAuth(id: number): Promise<Admin | undefined> {
+    return this.adminRepository.findOne({
+      where: { id },
+      relations: {
+        user: true,
+      },
+    });
+  }
+
+  async findByEmailAuth(email: string): Promise<Admin | undefined> {
     return this.adminRepository.findOne({
       where: { user: { email } },
       relations: {
@@ -75,7 +100,10 @@ export class AdminService {
    * @returns promise of user
    */
   async viewAdmin(id: number): Promise<Admin> {
-    return this.adminRepository.findOneBy({ id });
+    return this.adminRepository.findOneBy({
+      id,
+      user: { user_type: UserType.Admin },
+    });
   }
 
   /**
@@ -86,7 +114,7 @@ export class AdminService {
    * @returns promise of udpate user
    */
   async updateAdmin(body: any): Promise<Admin> {
-    const admin = await this.adminRepository.findOneBy({ id: body.details.id });
+    const admin = await this.viewAdmin(body.details.id);
 
     if (!admin) {
       throw new NotFoundException(`Admin not found`);

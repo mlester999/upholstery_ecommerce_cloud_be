@@ -1,13 +1,11 @@
-import { randomUuid } from '../../utils/generateUuid';
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { ActiveType } from 'src/user/entities/user.entity';
 import { Repository } from 'typeorm';
 import { CreateOrderDto } from './dto/create-order.dto';
 import { UpdateOrderDto } from './dto/update-order.dto';
-import { DeliveryStatusType, Order } from './entities/order.entity';
+import { DeliveryStatusType, Order, OrderReceivedType } from './entities/order.entity';
 import { Customer } from 'src/customer/entities/customer.entity';
-import { Seller } from 'src/seller/entities/seller.entity';
 import { Product } from 'src/product/entities/product.entity';
 
 @Injectable()
@@ -30,17 +28,40 @@ export class OrderService {
   async createOrder(
     createOrderDto: CreateOrderDto,
     customer: Customer,
-    seller: Seller,
-    product: Product,
+    products: any,
+    randomOrderId: string,
   ): Promise<Order> {
     const order: Order = new Order();
 
     order.customer = customer;
-    order.seller = seller;
-    order.product = product;
-    order.order_id = randomUuid(14, 'ALPHANUM');
-    order.status = DeliveryStatusType.Processing;
+    order.products = products;
+    order.order_id = randomOrderId;
     order.is_active = ActiveType.Active;
+    order.payment_method = createOrderDto.payment_method;
+    order.subtotal_price = createOrderDto.subtotal_price;
+    order.total_quantity = createOrderDto.total_quantity;
+    order.shipping_fee = createOrderDto.shipping_fee;
+    order.total_price = createOrderDto.total_price;
+
+    if (createOrderDto.source_id) {
+      order.source_id = createOrderDto.source_id;
+    }
+
+    if (createOrderDto.voucher_code) {
+      order.voucher_code = createOrderDto.voucher_code;
+    }
+
+    if (createOrderDto.price_discount) {
+      order.price_discount = createOrderDto.price_discount;
+    }
+
+    if (createOrderDto.shipping_discount) {
+      order.shipping_discount = createOrderDto.shipping_discount;
+    }
+
+    if (createOrderDto.discount_mode) {
+      order.discount_mode = createOrderDto.discount_mode;
+    }
 
     return this.orderRepository.save(order);
   }
@@ -53,8 +74,6 @@ export class OrderService {
     return this.orderRepository.find({
       relations: {
         customer: true,
-        seller: true,
-        product: true,
       },
     });
   }
@@ -64,8 +83,6 @@ export class OrderService {
       where: { id },
       relations: {
         customer: true,
-        seller: true,
-        product: true,
       },
     });
   }
@@ -86,13 +103,7 @@ export class OrderService {
    * @param updateOrderDto this is partial type of createOrderDto.
    * @returns promise of update order
    */
-  async updateOrder(
-    details: any,
-    id: number,
-    customer: Customer,
-    seller: Seller,
-    product: Product,
-  ): Promise<Order> {
+  async updateOrder(details: any, id: number): Promise<Order> {
     const order = await this.orderRepository.findOneBy({
       id,
     });
@@ -101,20 +112,40 @@ export class OrderService {
       throw new NotFoundException(`Order not found`);
     }
 
-    if (customer) {
-      order.customer = customer;
+    if (details.products) {
+      order.products = JSON.stringify(details.products);
     }
 
-    if (seller) {
-      order.seller = seller;
+    if (details.total_quantity) {
+      order.total_quantity = details.total_quantity;
     }
 
-    if (product) {
-      order.product = product;
+    if (details.subtotal_price) {
+      order.subtotal_price = details.subtotal_price;
     }
 
-    if (details.status) {
-      order.status = details.status;
+    if (details.shipping_fee) {
+      order.shipping_fee = details.shipping_fee;
+    }
+
+    if (details.total_price) {
+      order.total_price = details.total_price;
+    }
+
+    if (details.voucher_code) {
+      order.voucher_code = details.voucher_code;
+    }
+
+    if (details.price_discount) {
+      order.price_discount = details.price_discount;
+    }
+
+    if (details.shipping_discount) {
+      order.shipping_discount = details.shipping_discount;
+    }
+
+    if (details.discount_mode) {
+      order.discount_mode = details.discount_mode;
     }
 
     return await this.orderRepository.save(order);

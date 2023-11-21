@@ -19,16 +19,52 @@ import { MulterModule } from '@nestjs/platform-express/multer';
 import { join } from 'path';
 import { OrderModule } from './order/order.module';
 import { Order } from './order/entities/order.entity';
+import { VoucherModule } from './voucher/voucher.module';
+import { Voucher } from './voucher/entities/voucher.entity';
+import { ShopModule } from './shop/shop.module';
+import { Shop } from './shop/entities/shop.entity';
+import { PaymongoModule } from './paymongo/paymongo.module';
+import { ActivityLogModule } from './activity-log/activity-log.module';
+import { ActivityLog } from './activity-log/entities/activity-log.entity';
+import { ReturnRefundModule } from './return-refund/return-refund.module';
+import { ReturnRefund } from './return-refund/entities/return-refund.entity';
+import { SemaphoreModule } from './semaphore/semaphore.module';
+import { ConfigModule } from '@nestjs/config';
+import { BankAccountsModule } from './bank-accounts/bank-accounts.module';
+import { SellerBalanceModule } from './seller-balance/seller-balance.module';
+import { BankAccount } from './bank-accounts/entities/bank-account.entity';
+import { SellerBalance } from './seller-balance/entities/seller-balance.entity';
+import { SellerWithdrawalModule } from './seller-withdrawal/seller-withdrawal.module';
+import { SellerWithdrawal } from './seller-withdrawal/entities/seller-withdrawal.entity';
+import { ReviewModule } from './review/review.module';
+import { Review } from './review/entities/review.entity';
 
 @Module({
   imports: [
+    ConfigModule.forRoot(),
     TypeOrmModule.forRoot({
       type: 'postgres',
       host: 'localhost',
       port: 5432,
       username: 'postgres',
-      password: 'tw0t0w3rs',
-      entities: [User, Admin, Customer, Seller, Category, Product, Order],
+      password: 'password',
+      entities: [
+        User,
+        Admin,
+        Customer,
+        Seller,
+        Category,
+        Product,
+        Order,
+        Voucher,
+        Shop,
+        ReturnRefund,
+        BankAccount,
+        SellerBalance,
+        SellerWithdrawal,
+        Review,
+        ActivityLog
+      ],
       database: 'upholstery-ecommerce',
       synchronize: true,
       logging: true,
@@ -44,6 +80,16 @@ import { Order } from './order/entities/order.entity';
     CategoryModule,
     ProductModule,
     OrderModule,
+    VoucherModule,
+    ShopModule,
+    PaymongoModule,
+    ActivityLogModule,
+    ReturnRefundModule,
+    SemaphoreModule,
+    BankAccountsModule,
+    SellerBalanceModule,
+    SellerWithdrawalModule,
+    ReviewModule,
   ],
   controllers: [AppController],
   providers: [AppService],

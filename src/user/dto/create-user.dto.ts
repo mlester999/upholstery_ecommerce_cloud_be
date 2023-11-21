@@ -4,13 +4,15 @@ import {
   IsNotEmpty,
   IsNumber,
   IsOptional,
-  IsStrongPassword,
+  IsStrongPassword
 } from 'class-validator';
 import { ActiveType, UserType } from '../entities/user.entity';
+import { IsUnique } from 'src/is-unique.validator';
 
 export class CreateUserDto {
   @IsNotEmpty()
   @IsEmail()
+  @IsUnique({tableName: 'user', column: 'email'})
   email: string;
 
   @IsNotEmpty()
