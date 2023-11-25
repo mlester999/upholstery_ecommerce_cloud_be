@@ -13,6 +13,14 @@ import { SellerWithdrawalStatusType } from '../entities/seller-withdrawal.entity
     @IsNotEmpty()
     amount: number;
 
+    @IsNumber()
+    @IsNotEmpty()
+    commission_fee: number;
+
+    @IsNumber()
+    @IsNotEmpty()
+    total_withdrawal: number;
+
     @IsString()
     @IsEnum(SellerWithdrawalStatusType)
     @IsNotEmpty()

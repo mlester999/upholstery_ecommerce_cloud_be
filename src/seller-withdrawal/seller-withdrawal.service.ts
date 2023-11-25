@@ -37,6 +37,8 @@ export class SellerWithdrawalService {
     sellerWithdrawal.seller = seller;
     sellerWithdrawal.seller_withdrawal_id = sellerWithdrawalId;
     sellerWithdrawal.amount = createSellerWithdrawalDto.amount;
+    sellerWithdrawal.commission_fee = createSellerWithdrawalDto.commission_fee;
+    sellerWithdrawal.total_withdrawal = createSellerWithdrawalDto.total_withdrawal;
     sellerWithdrawal.status = SellerWithdrawalStatusType.PendingWithdrawal;
     sellerWithdrawal.is_active = ActiveType.Active;
 
@@ -109,6 +111,14 @@ export class SellerWithdrawalService {
 
     if (body.details.amount) {
       sellerWithdrawal.amount = body.details.amount;
+    }
+
+    if (body.details.commission_fee) {
+      sellerWithdrawal.commission_fee = body.details.commission_fee;
+    }
+
+    if (body.details.total_withdrawal) {
+      sellerWithdrawal.total_withdrawal = body.details.total_withdrawal;
     }
 
     if (body.details.status) {

@@ -21,7 +21,7 @@ export class DoSpacesService {
     return new Promise((resolve, reject) => {
       this.s3.putObject(
         {
-          Bucket: 'ccldo',
+          Bucket: 'ccldo-rtcu',
           Key: filePath,
           Body: file.buffer,
           ACL: 'public-read',
@@ -29,7 +29,7 @@ export class DoSpacesService {
         (error: AWS.AWSError) => {
           if (!error) {
             resolve({
-              url: `https://ccldo.sgp1.digitaloceanspaces.com/${filePath}`,
+              url: `https://ccldo-rtcu.sgp1.digitaloceanspaces.com/${filePath}`,
               fileName: fileName,
             });
           } else {
@@ -50,7 +50,7 @@ export class DoSpacesService {
     return new Promise((resolve, reject) => {
       this.s3.deleteObject(
         {
-          Bucket: 'ccldo',
+          Bucket: 'ccldo-rtcu',
           Key: fileName,
         },
         (error: AWS.AWSError) => {
@@ -79,7 +79,7 @@ export class DoSpacesService {
       // List the objects in the old folder
       this.s3.listObjectsV2(
         {
-          Bucket: 'ccldo',
+          Bucket: 'ccldo-rtcu',
           Prefix: `${folderName}/${oldFolderName}/`,
         },
         (error, data) => {
@@ -99,8 +99,8 @@ export class DoSpacesService {
             // Move a file from the old folder to the new folder
             this.s3
               .copyObject({
-                Bucket: 'ccldo',
-                CopySource: `ccldo/${oldFilePath}`,
+                Bucket: 'ccldo-rtcu',
+                CopySource: `ccldo-rtcu/${oldFilePath}`,
                 Key: newFilePath,
                 ACL: 'public-read',
               })
@@ -108,13 +108,13 @@ export class DoSpacesService {
 
             this.s3
               .deleteObject({
-                Bucket: 'ccldo',
+                Bucket: 'ccldo-rtcu',
                 Key: oldFilePath,
               })
               .promise();
 
             return resolve({
-              url: `https://ccldo.sgp1.digitaloceanspaces.com/${newFilePath}`,
+              url: `https://ccldo-rtcu.sgp1.digitaloceanspaces.com/${newFilePath}`,
               fileName: fileName,
             });
           } catch (error) {

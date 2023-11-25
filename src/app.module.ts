@@ -38,6 +38,8 @@ import { SellerWithdrawalModule } from './seller-withdrawal/seller-withdrawal.mo
 import { SellerWithdrawal } from './seller-withdrawal/entities/seller-withdrawal.entity';
 import { ReviewModule } from './review/review.module';
 import { Review } from './review/entities/review.entity';
+import { NotificationModule } from './notification/notification.module';
+import { FollowModule } from './follow/follow.module';
 
 @Module({
   imports: [
@@ -90,6 +92,8 @@ import { Review } from './review/entities/review.entity';
     SellerBalanceModule,
     SellerWithdrawalModule,
     ReviewModule,
+    NotificationModule,
+    FollowModule,
   ],
   controllers: [AppController],
   providers: [AppService],

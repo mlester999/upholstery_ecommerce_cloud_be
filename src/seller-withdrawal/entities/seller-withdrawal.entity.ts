@@ -32,6 +32,12 @@ export class SellerWithdrawal {
   @Column({ type: 'int' })
   amount: number;
 
+  @Column({ type: 'int' })
+  commission_fee: number;
+
+  @Column({ type: 'int' })
+  total_withdrawal: number;
+
   @Column({
   type: 'enum',
   enum: SellerWithdrawalStatusType,
