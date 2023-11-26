@@ -516,6 +516,37 @@ export class OrderController {
 
       if (Object.keys(body.details).length <= 1) return;
 
+      if (body.details.purpose) {
+        const order = await this.orderService.findById(orderId);
+
+        if (!order) {
+          throw new BadRequestException('No Order Found.');
+        }
+
+        const orderedProducts = await Promise.all(
+          JSON.parse(order.products).map(async (product, index) => {
+            const productStatus = {
+              ...product,
+              status: product.id === body.details.product_id ? body.details.status : product.status,
+            };
+
+            return productStatus;
+          }),
+        );
+
+        if (orderedProducts.length === 0) {
+          throw new BadRequestException('No Products Found.');
+        }
+
+        const orderDetails = {
+          products: orderedProducts,
+        };
+
+        await this.orderService.updateOrder(orderDetails, parseInt(orderId));
+
+        return {message: 'Order Packed Successfully'};
+      }
+
       if (body.details.products) {
         const order = await this.orderService.findById(orderId);
 

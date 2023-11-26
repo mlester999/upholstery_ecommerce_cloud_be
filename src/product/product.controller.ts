@@ -160,7 +160,6 @@ export class ProductController {
 
       return { message: 'Created Product Successfully.' };
     } catch (e) {
-      console.log(e);
       if (e.response?.message === 'No Category Found.') {
         throw new BadRequestException('No Category Found.');
       } else if (e.response?.message === 'No Shop Found.') {
