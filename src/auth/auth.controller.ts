@@ -90,7 +90,7 @@ export class AuthController {
     }
 
     if (!(await bcrypt.compare(password, customer.user.password))) {
-      throw new BadRequestException('Invalid credentials.');
+      throw new BadRequestException('Invalid email or password.');
     }
 
     const jwt = await this.jwtService.signAsync({
@@ -158,7 +158,7 @@ export class AuthController {
     }
 
     if (!(await bcrypt.compare(password, admin.user.password))) {
-      throw new BadRequestException('Invalid credentials.');
+      throw new BadRequestException('Invalid email or password.');
     }
 
     const jwt = await this.jwtService.signAsync({

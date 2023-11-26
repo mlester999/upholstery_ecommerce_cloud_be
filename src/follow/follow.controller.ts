@@ -20,11 +20,14 @@ import { SellerService } from 'src/seller/seller.service';
 import { FollowService } from './follow.service';
 import { ShopService } from 'src/shop/shop.service';
 import { CustomerService } from 'src/customer/customer.service';
+import { NotificationService } from 'src/notification/notification.service';
+import { ActiveType } from 'src/user/entities/user.entity';
 
 @Controller('follow')
 export class FollowController {
   constructor(
     private readonly followService: FollowService,
+    private readonly notificationService: NotificationService,
     private readonly shopService: ShopService,
     private readonly customerService: CustomerService,
     private readonly jwtService: JwtService,
@@ -90,8 +93,13 @@ export class FollowController {
       }
 
       const followId = randomUuid(14, 'ALPHANUM');
+      const notificationId = randomUuid(14, 'ALPHANUM');
       
       const createdFollow = await this.followService.createFollow(followId, shop, customer);
+
+      const notificationMessage = {title: `🎉 Welcome to ${shop.name}! 🛍️`, description: 'Thank you for following us! Explore our latest products and discover a world of fantastic finds. Happy shopping! 🌟', is_active: ActiveType.Active}
+
+      const createdNotification = await this.notificationService.createNotification(notificationMessage, notificationId, shop, customer);
 
       return { message: 'Added Seller Withdrawal Successfully.' };
     } catch (e) {

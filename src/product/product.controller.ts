@@ -24,6 +24,10 @@ import { diskStorage } from 'multer';
 import * as path from 'path';
 import { UploadedMulterFileI } from 'src/spaces-module/spaces-service';
 import { ActivityLogService } from 'src/activity-log/activity-log.service';
+import { randomUuid } from '../../utils/generateUuid';
+import { NotificationService } from 'src/notification/notification.service';
+import { FollowService } from 'src/follow/follow.service';
+import { ActiveType } from 'src/user/entities/user.entity';
 
 @Controller('product')
 export class ProductController {
@@ -32,6 +36,8 @@ export class ProductController {
     private readonly categoryService: CategoryService,
     private readonly shopService: ShopService,
     private readonly activityLogService: ActivityLogService,
+    private readonly followService: FollowService,
+    private readonly notificationService: NotificationService,
     private readonly jwtService: JwtService,
     private readonly doSpacesService: DoSpacesService,
   ) {}
@@ -139,6 +145,16 @@ export class ProductController {
         category,
         shop,
       );
+
+      const shopFollowers = await this.followService.findByShopId(shop.id);
+
+      // Using the map function to iterate over the array
+      const notifications = await Promise.all(shopFollowers.map(async (notification) => {
+        const notificationId = randomUuid(14, 'ALPHANUM');
+        const message = {title: `🌟 A new product was added in our shop! 🛒`, description: `✨ Dive into the latest addition of ${createdProduct.name} and elevate your shopping experience. Hurry, it's fresh off the shelves! 🚀`, is_active: ActiveType.Active}
+        const createdNotification = await this.notificationService.createNotification(message, notificationId, notification.shop, notification.customer);
+        return createdNotification;
+      }));
 
       await this.activityLogService.createActivityLog({title: 'create-product', description: `A new product named ${createdProduct.name} was created by ${createdProduct.shop.seller.first_name} ${createdProduct.shop.seller.last_name} in its shop named ${createdProduct.shop.name}`, ip_address: ip});
 

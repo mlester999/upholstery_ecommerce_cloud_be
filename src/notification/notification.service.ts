@@ -67,6 +67,19 @@ export class NotificationService {
     });
   }
 
+  async findByCustomerId(customer_id: number): Promise<Notification[] | undefined> {
+    return this.notificationRepository.find({
+      where: { customer: {
+        id: customer_id,
+      }, is_active: 1 },
+      relations: {
+        shop: true,
+        customer: true
+    },
+    order: {created_at: 'DESC'}
+    });
+  }
+
   /**
    * this function used to get data of use whose id is passed in parameter
    * @param id is type of number, which represent the id of notification.

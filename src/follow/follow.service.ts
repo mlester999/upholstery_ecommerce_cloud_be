@@ -64,8 +64,8 @@ export class FollowService {
     });
   }
 
-  async findByShopId(shop_id: number): Promise<Follow | undefined> {
-    return this.followRepository.findOne({
+  async findByShopId(shop_id: number): Promise<Follow[] | undefined> {
+    return this.followRepository.find({
       where: { shop: {
         id: shop_id,
         is_active: 1
@@ -93,9 +93,7 @@ export class FollowService {
       throw new NotFoundException(`Follow  not found`);
     }
 
-    follow.is_active = ActiveType.NotActive;
-
-    await this.followRepository.delete(follow);
+    await this.followRepository.remove(follow);
 
     return { message: 'Shop unfollowed successfully' };
   }

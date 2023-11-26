@@ -40,6 +40,8 @@ import { ReviewModule } from './review/review.module';
 import { Review } from './review/entities/review.entity';
 import { NotificationModule } from './notification/notification.module';
 import { FollowModule } from './follow/follow.module';
+import { Follow } from './follow/entities/follow.entity';
+import { Notification } from './notification/entities/notification.entity';
 
 @Module({
   imports: [
@@ -65,6 +67,8 @@ import { FollowModule } from './follow/follow.module';
         SellerBalance,
         SellerWithdrawal,
         Review,
+        Follow,
+        Notification,
         ActivityLog
       ],
       database: 'upholstery-ecommerce',

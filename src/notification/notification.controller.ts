@@ -65,6 +65,23 @@ export class NotificationController {
     }
   }
 
+  @Get('customer/:customer_id')
+  async findOneByCustomerId(@Req() request, @Param('customer_id') customerid) {
+    try {
+      const cookie = request.cookies['user_token'];
+
+      const data = await this.jwtService.verifyAsync(cookie);
+
+      if (!data) {
+        throw new UnauthorizedException();
+      }
+
+      return this.notificationService.findByCustomerId(Number(customerid));
+    } catch (e) {
+      throw new UnauthorizedException();
+    }
+  }
+
   @Post('add')
   async addNotification(@Body() body: any, @Req() request, @Ip() ip) {
     try {
@@ -90,11 +107,14 @@ export class NotificationController {
         throw new BadRequestException('No Customer Found.');
       }
 
-      const findShopFollowers = await this.followService.findByShopId(shop.id);
+      const shopFollowers = await this.followService.findByShopId(shop.id);
 
-      const notificationId = randomUuid(14, 'ALPHANUM');
-      
-      const createdNotification = await this.notificationService.createNotification(body.details, notificationId, shop, customer);
+        // Using the map function to iterate over the array
+      const notifications = await Promise.all(shopFollowers.map(async (notification) => {
+        const notificationId = randomUuid(14, 'ALPHANUM');
+        const createdNotification = await this.notificationService.createNotification(body.details, notificationId, notification.shop, notification.customer);
+        return createdNotification;
+      }));
 
       return { message: 'Added Seller Withdrawal Successfully.' };
     } catch (e) {
