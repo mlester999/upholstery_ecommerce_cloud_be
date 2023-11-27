@@ -27,9 +27,10 @@ export class ProductService {
    */
   async createProduct(
     createProductDto: CreateProductDto,
-    uploadedUrl: any,
+    uploadedImageUrl: any,
     category: Category,
     shop: Shop,
+    uploadedVideoUrl?: any
   ): Promise<Product> {
     const product: Product = new Product();
 
@@ -37,8 +38,10 @@ export class ProductService {
     product.shop = shop;
     product.name = createProductDto.name;
     product.description = createProductDto.description;
-    product.image_name = uploadedUrl.fileName;
-    product.image_file = uploadedUrl.url;
+    product.image_name = uploadedImageUrl.fileName;
+    product.image_file = uploadedImageUrl.url;
+    product.video_name = uploadedVideoUrl.fileName;
+    product.video_file = uploadedVideoUrl.url;
     product.price = createProductDto.price;
     product.quantity = createProductDto.quantity;
     product.is_active = ActiveType.Active;
@@ -171,14 +174,15 @@ export class ProductService {
    */
   async updateProduct(
     details: any,
-    uploadedUrl: any,
+    uploadedImageUrl: any,
     id: number,
     category: Category,
     shop: Shop,
+    uploadedVideoUrl?: any
   ): Promise<Product> {
-    const product = await this.productRepository.findOneBy({
+    const product = await this.findById(
       id,
-    });
+    );
 
     if (!product) {
       throw new NotFoundException(`Product not found`);
@@ -192,8 +196,13 @@ export class ProductService {
       product.shop = shop;
 
       if (!details.image_file) {
-        product.image_file = uploadedUrl.url;
-        product.image_name = uploadedUrl.fileName;
+        product.image_file = uploadedImageUrl.url;
+        product.image_name = uploadedImageUrl.fileName;
+      }
+
+      if (!details.video_file) {
+        product.video_file = uploadedVideoUrl.url;
+        product.video_name = uploadedVideoUrl.fileName;
       }
     }
 
@@ -217,8 +226,13 @@ export class ProductService {
     }
 
     if (details.image_file) {
-      product.image_file = uploadedUrl.url;
-      product.image_name = uploadedUrl.fileName;
+      product.image_file = uploadedImageUrl.url;
+      product.image_name = uploadedImageUrl.fileName;
+    }
+
+    if (details.video_file) {
+      product.video_file = uploadedVideoUrl.url;
+      product.video_name = uploadedVideoUrl.fileName;
     }
 
     if (details.price) {

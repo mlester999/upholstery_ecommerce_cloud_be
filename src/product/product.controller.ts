@@ -12,10 +12,11 @@ import {
   UnauthorizedException,
   UseInterceptors,
   Ip,
+  UploadedFiles,
 } from '@nestjs/common';
 import { BadRequestException } from '@nestjs/common/exceptions';
 import { JwtService } from '@nestjs/jwt';
-import { FileInterceptor } from '@nestjs/platform-express';
+import { AnyFilesInterceptor, FileInterceptor } from '@nestjs/platform-express';
 import { CategoryService } from 'src/category/category.service';
 import { ShopService } from 'src/shop/shop.service';
 import { ProductService } from './product.service';
@@ -99,11 +100,11 @@ export class ProductController {
   }
 
   @Post('add')
-  @UseInterceptors(FileInterceptor('image_file'))
+  @UseInterceptors(AnyFilesInterceptor())
   async addProduct(
     @Body() body: any,
     @Req() request,
-    @UploadedFile() file: UploadedMulterFileI,
+    @UploadedFiles() files: UploadedMulterFileI[],
     @Ip() ip
   ) {
     try {
@@ -131,17 +132,28 @@ export class ProductController {
         throw new BadRequestException('No Shop Found.');
       }
 
-      const uploadedUrl = await this.doSpacesService.uploadFile(
-        file,
+      const uploadedImageUrl = await this.doSpacesService.uploadFile(
+        files[0],
         details.shop_id,
         'products',
       );
 
+      let uploadedVideo;
+
+      if (details.video_file) {
+        uploadedVideo = await this.doSpacesService.uploadFile(
+          files[1],
+          details.shop_id,
+          'products',
+        );
+      }
+
       const createdProduct = await this.productService.createProduct(
         details,
-        uploadedUrl,
+        uploadedImageUrl,
         category,
         shop,
+        uploadedVideo
       );
 
       const shopFollowers = await this.followService.findByShopId(shop.id);
@@ -169,12 +181,12 @@ export class ProductController {
   }
 
   @Patch('update/:product_id')
-  @UseInterceptors(FileInterceptor('image_file'))
+  @UseInterceptors(AnyFilesInterceptor())
   async updateProduct(
     @Body() body: any,
     @Param('product_id') productId,
     @Req() request,
-    @UploadedFile() file: UploadedMulterFileI,
+    @UploadedFiles() files: UploadedMulterFileI[],
     @Ip() ip
   ) {
     try {
@@ -215,47 +227,115 @@ export class ProductController {
         throw new BadRequestException('No Product Found.');
       }
 
-      let uploadedUrl;
+      let uploadedImageUrl;
+      let uploadedVideoUrl;
 
-      if (details.image_file) {
+      if (details.image_file && details.video_file) {
+        await this.doSpacesService.removeFile(
+          `products/${product.shop.id}/${product.image_name}`,
+        );
+
+        if(product.video_name) {
+          await this.doSpacesService.removeFile(
+            `products/${product.shop.id}/${product.video_name}`,
+          );
+        }
+
+        if (details.shop_id) {
+          uploadedImageUrl = await this.doSpacesService.uploadFile(
+            files[0],
+            details.shop_id,
+            'products',
+          );
+
+          uploadedVideoUrl = await this.doSpacesService.uploadFile(
+            files[1],
+            details.shop_id,
+            'products',
+          );
+        } else {
+          uploadedImageUrl = await this.doSpacesService.uploadFile(
+            files[0],
+            product.shop.id,
+            'products',
+          );
+
+          uploadedVideoUrl = await this.doSpacesService.uploadFile(
+            files[1],
+            product.shop.id,
+            'products',
+          );
+        }
+      } else if (details.image_file) {
         await this.doSpacesService.removeFile(
           `products/${product.shop.id}/${product.image_name}`,
         );
 
         if (details.shop_id) {
-          uploadedUrl = await this.doSpacesService.uploadFile(
-            file,
+          uploadedImageUrl = await this.doSpacesService.uploadFile(
+            files[0],
             details.shop_id,
             'products',
           );
         } else {
-          uploadedUrl = await this.doSpacesService.uploadFile(
-            file,
+          uploadedImageUrl = await this.doSpacesService.uploadFile(
+            files[0],
+            product.shop.id,
+            'products',
+          );
+        }
+      } else if (details.video_file) {
+        if(product.video_name) {
+          await this.doSpacesService.removeFile(
+            `products/${product.shop.id}/${product.video_name}`,
+          );
+        }
+
+        if (details.shop_id) {
+          uploadedVideoUrl = await this.doSpacesService.uploadFile(
+            files[0],
+            details.shop_id,
+            'products',
+          );
+        } else {
+          uploadedVideoUrl = await this.doSpacesService.uploadFile(
+            files[0],
             product.shop.id,
             'products',
           );
         }
       } else if (details.shop_id) {
-        uploadedUrl = await this.doSpacesService.renameFolder(
+        uploadedImageUrl = await this.doSpacesService.renameFolder(
           'products',
           product.shop.id,
           details.shop_id,
           product.image_name,
         );
+
+        if(product.video_name) {
+          uploadedVideoUrl = await this.doSpacesService.renameFolder(
+            'products',
+            product.shop.id,
+            details.shop_id,
+            product.video_name,
+          );
+        }
       }
 
       const updatedProduct = await this.productService.updateProduct(
         details,
-        uploadedUrl,
+        uploadedImageUrl,
         parseInt(productId),
         category,
         shop,
+        uploadedVideoUrl
       );
 
       await this.activityLogService.createActivityLog({title: 'update-product', description: `A product named ${updatedProduct.name} was updated by ${updatedProduct.shop.seller.first_name} ${updatedProduct.shop.seller.last_name} in its shop named ${updatedProduct.shop.name}`, ip_address: ip});
 
       return { message: 'Updated product details successfully.' };
     } catch (e) {
+      console.log(e);
       throw new UnauthorizedException();
     }
   }

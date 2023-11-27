@@ -40,6 +40,12 @@ export class Product {
   @Column({ type: 'text' })
   image_file: string;
 
+  @Column({ type: 'text', nullable: true })
+  video_name?: string;
+
+  @Column({ type: 'text', nullable: true })
+  video_file?: string;
+
   @Column({ type: 'int' })
   price: number;
 
