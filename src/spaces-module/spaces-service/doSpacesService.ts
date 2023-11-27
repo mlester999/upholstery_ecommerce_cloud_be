@@ -57,7 +57,6 @@ export class DoSpacesService {
           if (!error) {
             resolve(`File ${fileName} deleted successfully`);
           } else {
-            console.log(error);
             reject(
               new Error(
                 `DoSpacesService_ERROR: ${
@@ -84,7 +83,6 @@ export class DoSpacesService {
         },
         (error, data) => {
           if (error) {
-            console.log(error);
             reject(
               new Error(
                 `DoSpacesService_ERROR: ${

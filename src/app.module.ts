@@ -42,6 +42,8 @@ import { NotificationModule } from './notification/notification.module';
 import { FollowModule } from './follow/follow.module';
 import { Follow } from './follow/entities/follow.entity';
 import { Notification } from './notification/entities/notification.entity';
+import { SellerNotificationModule } from './seller-notification/seller-notification.module';
+import { SellerNotification } from './seller-notification/entities/seller-notification.entity';
 
 @Module({
   imports: [
@@ -69,6 +71,7 @@ import { Notification } from './notification/entities/notification.entity';
         Review,
         Follow,
         Notification,
+        SellerNotification,
         ActivityLog
       ],
       database: 'upholstery-ecommerce',
@@ -98,6 +101,7 @@ import { Notification } from './notification/entities/notification.entity';
     ReviewModule,
     NotificationModule,
     FollowModule,
+    SellerNotificationModule,
   ],
   controllers: [AppController],
   providers: [AppService],

@@ -15,8 +15,6 @@ export class PaymongoController {
       'hook_vEj9sXLZG4UnFucPPTqxgrhV',
     );
 
-    console.log(result);
-    console.log(retrieveResult);
     // console.log(retrieveResult.data);
 
     // async function listWebhooks() {

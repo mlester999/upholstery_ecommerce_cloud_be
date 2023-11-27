@@ -102,7 +102,6 @@ export class ReviewController {
 
       return { message: 'Added Review Successfully.' };
     } catch (e) {
-      console.log(e);
       throw new UnauthorizedException();
     }
   }

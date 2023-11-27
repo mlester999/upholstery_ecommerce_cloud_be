@@ -68,8 +68,6 @@ export class ReturnRefundController {
         throw new UnauthorizedException();
       }
 
-      console.log(returnRefundSlug);
-
       return this.returnRefundService.findBySlug(returnRefundSlug);
     } catch (e) {
       throw new UnauthorizedException();
@@ -140,7 +138,6 @@ export class ReturnRefundController {
 
       return { message: 'Return/Refund Requested Successfully.' };
     } catch (e) {
-        console.log(e);
         throw new UnauthorizedException();
     }
   }

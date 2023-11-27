@@ -61,6 +61,15 @@ export class AdminService {
     });
   }
 
+  async findByAdminId(id: number): Promise<Admin | undefined> {
+    return this.adminRepository.findOne({
+      where: { id },
+      relations: {
+        user: true,
+      },
+    });
+  }
+
   async findByEmail(email: string): Promise<Admin | undefined> {
     return this.adminRepository.findOne({
       where: { user: { email, user_type: UserType.Admin } },

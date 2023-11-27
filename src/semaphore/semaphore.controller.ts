@@ -23,8 +23,6 @@ export class SemaphoreController {
 
     if (Object.keys(body.details).length === 0) return;
 
-    console.log(process.env);
-
     const {contact_number} = body.details;
 
     try {
@@ -42,9 +40,6 @@ export class SemaphoreController {
           },
         }
       );
-
-      // Handle the response as needed
-      console.log("Response:", response.data[0]);
 
       return {sms: response.data[0].code}
 
