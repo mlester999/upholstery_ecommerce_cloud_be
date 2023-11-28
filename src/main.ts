@@ -13,6 +13,6 @@ async function bootstrap() {
     origin: ['http://127.0.0.1:5173', 'http://localhost:3000', 'https://api.semaphore.co/api/v4'],
     credentials: true,
   });
-  await app.listen(4000);
+  await app.listen(3000);
 }
 bootstrap();
