@@ -52,7 +52,7 @@ export const dataSourceOptions: DataSourceOptions = {
     logging: true,
     migrations: ["dist/src/migrations/*{.ts,.js}"],
     migrationsTableName: "migrations_typeorm",
-    migrationsRun: false,
+    migrationsRun: true,
   };
 
 const dataSource = new DataSource(dataSourceOptions);
