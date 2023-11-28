@@ -28,7 +28,6 @@ export const dataSourceOptions: DataSourceOptions = {
     ssl: {
         rejectUnauthorized: false,
     },
-    migrationsTransactionMode: 'each',
     entities: [
         User,
         Admin,
@@ -53,7 +52,7 @@ export const dataSourceOptions: DataSourceOptions = {
     logging: true,
     migrations: ["dist/src/migrations/*{.ts,.js}"],
     migrationsTableName: "migrations_typeorm",
-    migrationsRun: true,
+    migrationsRun: false,
   };
 
 const dataSource = new DataSource(dataSourceOptions);
