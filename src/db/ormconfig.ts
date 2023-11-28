@@ -20,10 +20,11 @@ import { DataSourceOptions, DataSource } from 'typeorm';
 
 export const dataSourceOptions: DataSourceOptions = {
     type: 'postgres',
-    host: 'localhost',
-    port: 5432,
-    username: 'postgres',
-    password: 'password',
+    host: process.env.POSTGRES_HOST,
+    port: process.env.POSTGRES_PORT,
+    username: process.env.POSTGRES_USERNAME,
+    password: process.env.POSTGRES_PASSWORD,
+    database: process.env.POSTGRES_DB,
     entities: [
         User,
         Admin,
@@ -44,12 +45,11 @@ export const dataSourceOptions: DataSourceOptions = {
         SellerNotification,
         ActivityLog
       ],
-    database: 'ccldo',
     synchronize: false,
     logging: true,
     migrations: ["dist/src/migrations/*{.ts,.js}"],
     migrationsTableName: "migrations_typeorm",
-    migrationsRun: false,
+    migrationsRun: true,
   };
 
 const dataSource = new DataSource(dataSourceOptions);
