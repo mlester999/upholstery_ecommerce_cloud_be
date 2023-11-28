@@ -16,7 +16,7 @@ import { UnauthorizedException } from '@nestjs/common/exceptions/unauthorized.ex
 import { CreateUserDto } from 'src/user/dto/create-user.dto';
 import { CreateAdminDto } from 'src/admin/dto/create-admin.dto';
 import { AdminService } from 'src/admin/admin.service';
-import { UserType } from 'src/user/entities/user.entity';
+import { ActiveType, UserType } from 'src/user/entities/user.entity';
 import { CustomerService } from 'src/customer/customer.service';
 import { CreateCustomerDto } from 'src/customer/dto/create-customer.dto';
 import { SellerService } from 'src/seller/seller.service';
