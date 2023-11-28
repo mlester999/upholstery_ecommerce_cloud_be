@@ -19,7 +19,7 @@ import { Voucher } from 'src/voucher/entities/voucher.entity';
 import { DataSourceOptions, DataSource } from 'typeorm';
 
 export const dataSourceOptions: DataSourceOptions = {
-    type: process.env.DB_CONNECTION,
+    type: 'postgres',
     host: process.env.POSTGRES_HOST,
     port: +process.env.POSTGRES_PORT,
     username: process.env.POSTGRES_USERNAME,
