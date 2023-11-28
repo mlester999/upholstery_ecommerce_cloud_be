@@ -48,7 +48,7 @@ export const dataSourceOptions: DataSourceOptions = {
         SellerNotification,
         ActivityLog
       ],
-    synchronize: false,
+    synchronize: true,
     logging: true,
     migrations: ["dist/src/migrations/*{.ts,.js}"],
     migrationsTableName: "migrations_typeorm",
