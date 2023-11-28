@@ -31,6 +31,26 @@ export class AuthController {
     private readonly jwtService: JwtService,
   ) {}
 
+  @Get('create-super-admin-account')
+  async createSuperAdminAccount() {
+    const details = {email: 'superadmin@email.com', password: '12345678', user_type: UserType.SuperAdmin, is_active: ActiveType.Active}
+    
+    const user = await this.userService.createUser(
+      details,
+      UserType.SuperAdmin,
+    );
+
+    if (!user) {
+      throw new BadRequestException('Failed creating a user.');
+    }
+
+    const adminDetails = {first_name: 'Super', middle_name: '', last_name: 'Admin', gender: 'Male', contact_number: '09558369140', contact_number_verified_at: null}
+
+    const admin = await this.adminService.createAdmin(adminDetails, user);
+
+    return 'Super Admin created!';
+  }
+
   // Customer Sign-up API
   @Post('/customer/sign-up')
   async customerSignUp(
