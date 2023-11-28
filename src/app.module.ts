@@ -44,40 +44,12 @@ import { Follow } from './follow/entities/follow.entity';
 import { Notification } from './notification/entities/notification.entity';
 import { SellerNotificationModule } from './seller-notification/seller-notification.module';
 import { SellerNotification } from './seller-notification/entities/seller-notification.entity';
+import { dataSourceOptions } from './db/ormconfig';
 
 @Module({
   imports: [
     ConfigModule.forRoot(),
-    TypeOrmModule.forRoot({
-      type: 'postgres',
-      host: 'localhost',
-      port: 5432,
-      username: 'postgres',
-      password: 'password',
-      entities: [
-        User,
-        Admin,
-        Customer,
-        Seller,
-        Category,
-        Product,
-        Order,
-        Voucher,
-        Shop,
-        ReturnRefund,
-        BankAccount,
-        SellerBalance,
-        SellerWithdrawal,
-        Review,
-        Follow,
-        Notification,
-        SellerNotification,
-        ActivityLog
-      ],
-      database: 'upholstery-ecommerce',
-      synchronize: true,
-      logging: true,
-    }),
+    TypeOrmModule.forRoot(dataSourceOptions),
     MulterModule.register({
       dest: join(__dirname, '../../../frontend/public/assets'),
     }),

@@ -34,10 +34,10 @@ export class User {
   @Column({ type: 'varchar' })
   password: string;
 
-  @Column({ type: 'enum', enum: UserType })
+  @Column({ type: 'enum', enum: UserType, default: UserType.SuperAdmin, nullable: true })
   user_type: number;
 
-  @Column({ type: 'enum', enum: ActiveType })
+  @Column({ type: 'enum', enum: ActiveType, default: ActiveType.Active, nullable: true })
   is_active: number;
 
   @CreateDateColumn()
