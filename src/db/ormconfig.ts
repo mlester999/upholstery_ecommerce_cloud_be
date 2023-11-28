@@ -44,7 +44,7 @@ export const dataSourceOptions: DataSourceOptions = {
         SellerNotification,
         ActivityLog
       ],
-    database: 'upholstery-ecommerce',
+    database: 'ccldo',
     synchronize: false,
     logging: true,
     migrations: ["dist/src/migrations/*{.ts,.js}"],
