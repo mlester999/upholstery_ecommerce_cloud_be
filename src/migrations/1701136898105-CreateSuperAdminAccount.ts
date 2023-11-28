@@ -9,24 +9,24 @@ export class CreateSuperAdminAccount1701136898105 implements MigrationInterface 
         const hashedPassword = await bcrypt.hash('12345678', salt);
 
         const superAdminTable = await queryRunner.query(`
-            INSERT INTO "user" (email, password, user_type, is_active)
+            INSERT INTO "users" (email, password, user_type, is_active)
             VALUES ('superadmin@email.com', '${hashedPassword}', '3', '1') RETURNING id;
         `);
 
         await queryRunner.query(`
-            INSERT INTO "admin" (first_name, last_name, gender, contact_number, "userId")
+            INSERT INTO "admins" (first_name, last_name, gender, contact_number, "userId")
             VALUES ('Super', 'Admin', 'Male', '09558369140', ${superAdminTable[0].id});
         `);
     }
 
     public async down(queryRunner: QueryRunner): Promise<void> {
         await queryRunner.query(`
-        DELETE FROM "admin"
+        DELETE FROM "admins"
         WHERE first_name = 'Super' AND last_name = 'Admin';
     `); 
 
         await queryRunner.query(`
-            DELETE FROM "user"
+            DELETE FROM "users"
             WHERE email = 'superadmin@email.com';
         `);
 
