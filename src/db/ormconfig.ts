@@ -28,6 +28,7 @@ export const dataSourceOptions: DataSourceOptions = {
     ssl: {
         rejectUnauthorized: false,
     },
+    migrationsTransactionMode: 'each',
     entities: [
         User,
         Admin,
