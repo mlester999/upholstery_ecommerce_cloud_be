@@ -258,7 +258,7 @@ export class AuthController {
       secure: true,
     });
 
-    return { message: 'Login successfully.' };
+    return { message: 'Login successfully.', customer_id: customer.id };
   }
 
   // Seller Login API
