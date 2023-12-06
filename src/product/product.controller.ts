@@ -82,8 +82,8 @@ export class ProductController {
     }
   }
 
-  @Get('/slug/:productSlug')
-  async findOneByOrderId(@Req() request, @Param('productSlug') productSlug) {
+  @Get('/slug/:shopSlug/:productSlug')
+  async findOneByOrderId(@Req() request, @Param('shopSlug') shopSlug, @Param('productSlug') productSlug) {
     try {
       const cookie = request.cookies['user_token'];
 
@@ -93,7 +93,10 @@ export class ProductController {
         throw new UnauthorizedException();
       }
 
-      return this.productService.findBySlug(productSlug);
+      console.log(productSlug);
+      console.log(shopSlug);
+
+      return this.productService.findBySlugAndShop(productSlug, shopSlug);
     } catch (e) {
       throw new UnauthorizedException();
     }
