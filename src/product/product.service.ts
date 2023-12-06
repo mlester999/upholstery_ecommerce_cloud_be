@@ -40,8 +40,8 @@ export class ProductService {
     product.description = createProductDto.description;
     product.image_name = uploadedImageUrl.fileName;
     product.image_file = uploadedImageUrl.url;
-    product.video_name = uploadedVideoUrl?.fileName;
-    product.video_file = uploadedVideoUrl?.url;
+    product.video_name = uploadedVideoUrl.fileName;
+    product.video_file = uploadedVideoUrl.url;
     product.price = createProductDto.price;
     product.quantity = createProductDto.quantity;
     product.is_active = ActiveType.Active;
@@ -109,6 +109,18 @@ export class ProductService {
   async findBySlug(slug: string): Promise<Product | undefined> {
     return this.productRepository.findOne({
       where: { slug },
+      relations: {
+        category: true,
+        shop: {
+          seller: true,
+        },
+      },
+    });
+  }
+
+  async findBySlugAndShop(slug: string, shop: string): Promise<Product | undefined> {
+    return this.productRepository.findOne({
+      where: { slug, shop: {name: shop} },
       relations: {
         category: true,
         shop: {
