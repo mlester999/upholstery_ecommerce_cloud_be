@@ -111,7 +111,7 @@ export class ProductService {
 
   async findBySlug(slug: string): Promise<Product | undefined> {
     return this.productRepository.findOne({
-      where: { slug },
+     where: { slug, is_active: 1 },
       relations: {
         category: true,
         shop: {
@@ -123,7 +123,7 @@ export class ProductService {
 
   async findBySlugAndShop(slug: string, shop: string): Promise<Product | undefined> {
     return this.productRepository.findOne({
-      where: { slug, shop: {name: shop} },
+      where: { slug, is_active: 1, shop: {name: shop} },
       relations: {
         category: true,
         shop: {
