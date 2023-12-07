@@ -81,6 +81,9 @@ export class ProductService {
 
   async findLatestProducts(): Promise<Product[]> {
     return this.productRepository.find({
+      where: {
+        is_active: 1
+      },
       relations: {
         category: true,
         shop: {
