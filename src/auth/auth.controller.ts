@@ -104,7 +104,7 @@ export class AuthController {
     ) {
       const seller = await this.sellerService.findByEmail(email);
   
-      if (!seller) {
+      if (!seller || !seller.user.is_active) {
         throw new BadRequestException(
           'No account is associated with the email provided.',
         );
@@ -126,7 +126,7 @@ export class AuthController {
     ) {
       const seller = await this.sellerService.findByEmail(email);
   
-      if (!seller) {
+      if (!seller || !seller.user.is_active) {
         throw new BadRequestException(
           'No account is associated with the email provided.',
         );
@@ -169,7 +169,7 @@ export class AuthController {
     ) {
       const customer = await this.customerService.findByEmail(email);
   
-      if (!customer) {
+      if (!customer || !customer.user.is_active) {
         throw new BadRequestException(
           'No account is associated with the email provided.',
         );
@@ -191,7 +191,7 @@ export class AuthController {
       ) {
         const customer = await this.customerService.findByEmail(email);
     
-        if (!customer) {
+        if (!customer || !customer.user.is_active) {
           throw new BadRequestException(
             'No account is associated with the email provided.',
           );
@@ -236,7 +236,7 @@ export class AuthController {
   ) {
     const customer = await this.customerService.findByEmail(email);
 
-    if (!customer) {
+    if (!customer || !customer.user.is_active) {
       throw new BadRequestException(
         'No account is associated with the email provided.',
       );
@@ -270,7 +270,7 @@ export class AuthController {
   ) {
     const seller = await this.sellerService.findByEmail(email);
 
-    if (!seller) {
+    if (!seller || !seller.user.is_active) {
       throw new BadRequestException(
         'No account is associated with the email provided.',
       );
@@ -304,7 +304,7 @@ export class AuthController {
   ) {
     const admin = await this.adminService.findByEmailAuth(email);
 
-    if (!admin) {
+    if (!admin || !admin.user.is_active) {
       throw new BadRequestException(
         'No account is associated with the email provided.',
       );
