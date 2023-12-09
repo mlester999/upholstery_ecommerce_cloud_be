@@ -82,6 +82,29 @@ export class ProductController {
     }
   }
 
+  @Get('/slug/:productSlug')
+  async findOneByProductSlug(@Req() request, @Param('productSlug') productSlug) {
+    try {
+      const cookie = request.cookies['user_token'];
+
+      const data = await this.jwtService.verifyAsync(cookie);
+
+      if (!data) {
+        throw new UnauthorizedException();
+      }
+
+      const userId = parseInt(data['user_id']);
+
+      const user = await this.userService.findById(userId);
+
+      const seller = await this.sellerService.findByEmail(user.email);
+
+      return this.productService.findBySlug(productSlug, seller.id);
+    } catch (e) {
+      throw new UnauthorizedException();
+    }
+  }
+
   @Get('/slug/:shopSlug/:productSlug')
   async findOneByOrderId(@Req() request, @Param('shopSlug') shopSlug, @Param('productSlug') productSlug) {
     try {
