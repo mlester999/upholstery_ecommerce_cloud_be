@@ -109,9 +109,9 @@ export class ProductService {
     });
   }
 
-  async findBySlug(slug: string): Promise<Product | undefined> {
+  async findBySlug(slug: string, seller_id: number): Promise<Product | undefined> {
     return this.productRepository.findOne({
-     where: { slug, is_active: 1 },
+      where: { slug, is_active: 1, shop: {seller: {id: seller_id}} },
       relations: {
         category: true,
         shop: {
