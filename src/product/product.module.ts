@@ -43,6 +43,8 @@ import { FollowService } from 'src/follow/follow.service';
     DoSpacesService,
     FollowService,
     NotificationService,
+    UserService,
+    SellerService,
     ActivityLogService,
     JwtStrategy,
   ],
