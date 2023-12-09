@@ -29,6 +29,8 @@ import { randomUuid } from '../../utils/generateUuid';
 import { NotificationService } from 'src/notification/notification.service';
 import { FollowService } from 'src/follow/follow.service';
 import { ActiveType } from 'src/user/entities/user.entity';
+import { UserService } from 'src/user/user.service';
+import { SellerService } from 'src/seller/seller.service';
 
 @Controller('product')
 export class ProductController {
@@ -40,6 +42,8 @@ export class ProductController {
     private readonly followService: FollowService,
     private readonly notificationService: NotificationService,
     private readonly jwtService: JwtService,
+    private readonly userService: UserService,
+    private readonly sellerService: SellerService,
     private readonly doSpacesService: DoSpacesService,
   ) {}
 
