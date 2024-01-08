@@ -41,6 +41,54 @@ export class Product {
   image_file: string;
 
   @Column({ type: 'text', nullable: true })
+  image_name_2?: string;
+
+  @Column({ type: 'text', nullable: true })
+  image_file_2?: string;
+
+  @Column({ type: 'text', nullable: true })
+  image_name_3?: string;
+
+  @Column({ type: 'text', nullable: true })
+  image_file_3?: string;
+
+  @Column({ type: 'text', nullable: true })
+  image_name_4?: string;
+
+  @Column({ type: 'text', nullable: true })
+  image_file_4?: string;
+
+  @Column({ type: 'text', nullable: true })
+  image_name_5?: string;
+
+  @Column({ type: 'text', nullable: true })
+  image_file_5?: string;
+
+  @Column({ type: 'text', nullable: true })
+  image_name_6?: string;
+
+  @Column({ type: 'text', nullable: true })
+  image_file_6?: string;
+
+  @Column({ type: 'text', nullable: true })
+  image_name_7?: string;
+
+  @Column({ type: 'text', nullable: true })
+  image_file_7?: string;
+
+  @Column({ type: 'text', nullable: true })
+  image_name_8?: string;
+
+  @Column({ type: 'text', nullable: true })
+  image_file_8?: string;
+
+  @Column({ type: 'text', nullable: true })
+  image_name_9?: string;
+
+  @Column({ type: 'text', nullable: true })
+  image_file_9?: string;
+
+  @Column({ type: 'text', nullable: true })
   video_name?: string;
 
   @Column({ type: 'text', nullable: true })
