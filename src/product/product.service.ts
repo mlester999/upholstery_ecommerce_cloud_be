@@ -140,7 +140,7 @@ export class ProductService {
     seller_id: number,
   ): Promise<Product | undefined> {
     return this.productRepository.findOne({
-      where: { slug, is_active: 1, shop: { seller: { id: seller_id } } },
+      where: { slug, shop: { seller: { id: seller_id } } },
       relations: {
         category: true,
         shop: {
@@ -155,7 +155,7 @@ export class ProductService {
     shop: string,
   ): Promise<Product | undefined> {
     return this.productRepository.findOne({
-      where: { slug, shop: { name: shop } },
+      where: { slug, is_active: 1, shop: { name: shop } },
       relations: {
         category: true,
         shop: {
