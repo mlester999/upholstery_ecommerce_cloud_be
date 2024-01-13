@@ -10,9 +10,9 @@ async function bootstrap() {
   app.useGlobalPipes(new ValidationPipe({ transform: true, whitelist: true }));
   app.use(cookieParser());
   app.enableCors({
-    origin: ['http://127.0.0.1:5173', 'http://localhost:3000', 'https://api.semaphore.co/api/v4'],
+    origin: ['https://ccldo-web-portal-njytd.ondigitalocean.app', 'https://rtcu-ecommerce-xqj88.ondigitalocean.app', 'https://api.semaphore.co/api/v4'],
     credentials: true,
   });
-  await app.listen(4000);
+  await app.listen(3000);
 }
 bootstrap();

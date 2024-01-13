@@ -39,6 +39,19 @@ export class UserService {
     return this.userRepository.save(user);
   }
 
+  async forgotPasswordUser(
+    user_id: number,
+    hashedPassword: string
+  ): Promise<User> {
+    const user = await this.userRepository.findOneBy({
+      id: user_id,
+    });
+
+    user.password = hashedPassword;
+
+    return await this.userRepository.save(user);
+  }
+
   async createNewUser(
     createUserDto: CreateUserDto,
     userType: number,

@@ -27,9 +27,18 @@ export class ProductService {
    */
   async createProduct(
     createProductDto: CreateProductDto,
-    uploadedUrl: any,
     category: Category,
     shop: Shop,
+    uploadedImageUrl: any,
+    uploadedImageUrl2?: any,
+    uploadedImageUrl3?: any,
+    uploadedImageUrl4?: any,
+    uploadedImageUrl5?: any,
+    uploadedImageUrl6?: any,
+    uploadedImageUrl7?: any,
+    uploadedImageUrl8?: any,
+    uploadedImageUrl9?: any,
+    uploadedVideoUrl?: any,
   ): Promise<Product> {
     const product: Product = new Product();
 
@@ -37,8 +46,27 @@ export class ProductService {
     product.shop = shop;
     product.name = createProductDto.name;
     product.description = createProductDto.description;
-    product.image_name = uploadedUrl.fileName;
-    product.image_file = uploadedUrl.url;
+    product.image_name = uploadedImageUrl.fileName;
+    product.image_file = uploadedImageUrl.url;
+    product.image_name_2 = uploadedImageUrl2?.fileName;
+    product.image_file_2 = uploadedImageUrl2?.url;
+    product.image_name_3 = uploadedImageUrl3?.fileName;
+    product.image_file_3 = uploadedImageUrl3?.url;
+    product.image_name_4 = uploadedImageUrl4?.fileName;
+    product.image_file_4 = uploadedImageUrl4?.url;
+    product.image_name_5 = uploadedImageUrl5?.fileName;
+    product.image_file_5 = uploadedImageUrl5?.url;
+    product.image_name_6 = uploadedImageUrl6?.fileName;
+    product.image_file_6 = uploadedImageUrl6?.url;
+    product.image_name_7 = uploadedImageUrl7?.fileName;
+    product.image_file_7 = uploadedImageUrl7?.url;
+    product.image_name_8 = uploadedImageUrl8?.fileName;
+    product.image_file_8 = uploadedImageUrl8?.url;
+    product.image_name_9 = uploadedImageUrl9?.fileName;
+    product.image_file_9 = uploadedImageUrl9?.url;
+
+    product.video_name = uploadedVideoUrl?.fileName;
+    product.video_file = uploadedVideoUrl?.url;
     product.price = createProductDto.price;
     product.quantity = createProductDto.quantity;
     product.is_active = ActiveType.Active;
@@ -47,14 +75,15 @@ export class ProductService {
     const lowercaseTitle = product.name.toLowerCase();
 
     // Replace special characters with empty strings using a regular expression
-    const withoutSpecialChars = lowercaseTitle.replace(/\s+/g, "-");
+    const withoutSpecialChars = lowercaseTitle.replace(/\s+/g, '-');
 
     // Replace spaces with hyphens
-    const removeExtraSpecialChars = withoutSpecialChars.toLowerCase()
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/-\&-/g, "-");
+    const removeExtraSpecialChars = withoutSpecialChars
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/-\&-/g, '-');
 
-    const productSlug = removeExtraSpecialChars.replace(/[^a-z0-9-]/g, "");
+    const productSlug = removeExtraSpecialChars.replace(/[^a-z0-9-]/g, '');
 
     product.slug = productSlug;
 
@@ -78,6 +107,9 @@ export class ProductService {
 
   async findLatestProducts(): Promise<Product[]> {
     return this.productRepository.find({
+      where: {
+        is_active: 1,
+      },
       relations: {
         category: true,
         shop: {
@@ -103,9 +135,27 @@ export class ProductService {
     });
   }
 
-  async findBySlug(slug: string): Promise<Product | undefined> {
+  async findBySlug(
+    slug: string,
+    seller_id: number,
+  ): Promise<Product | undefined> {
     return this.productRepository.findOne({
-      where: { slug },
+      where: { slug, shop: { seller: { id: seller_id } } },
+      relations: {
+        category: true,
+        shop: {
+          seller: true,
+        },
+      },
+    });
+  }
+
+  async findBySlugAndShop(
+    slug: string,
+    shop: string,
+  ): Promise<Product | undefined> {
+    return this.productRepository.findOne({
+      where: { slug, is_active: 1, shop: { name: shop } },
       relations: {
         category: true,
         shop: {
@@ -171,14 +221,21 @@ export class ProductService {
    */
   async updateProduct(
     details: any,
-    uploadedUrl: any,
     id: number,
     category: Category,
     shop: Shop,
+    uploadedImageUrl: any,
+    uploadedImageUrl2?: any,
+    uploadedImageUrl3?: any,
+    uploadedImageUrl4?: any,
+    uploadedImageUrl5?: any,
+    uploadedImageUrl6?: any,
+    uploadedImageUrl7?: any,
+    uploadedImageUrl8?: any,
+    uploadedImageUrl9?: any,
+    uploadedVideoUrl?: any,
   ): Promise<Product> {
-    const product = await this.productRepository.findOneBy({
-      id,
-    });
+    const product = await this.findById(id);
 
     if (!product) {
       throw new NotFoundException(`Product not found`);
@@ -192,8 +249,53 @@ export class ProductService {
       product.shop = shop;
 
       if (!details.image_file) {
-        product.image_file = uploadedUrl.url;
-        product.image_name = uploadedUrl.fileName;
+        product.image_file = uploadedImageUrl.url;
+        product.image_name = uploadedImageUrl.fileName;
+      }
+
+      if (!details.image_file_2) {
+        product.image_file_2 = uploadedImageUrl2.url;
+        product.image_name_2 = uploadedImageUrl2.fileName;
+      }
+
+      if (!details.image_file_3) {
+        product.image_file_3 = uploadedImageUrl3.url;
+        product.image_name_3 = uploadedImageUrl3.fileName;
+      }
+
+      if (!details.image_file_4) {
+        product.image_file_4 = uploadedImageUrl4.url;
+        product.image_name_4 = uploadedImageUrl4.fileName;
+      }
+
+      if (!details.image_file_5) {
+        product.image_file_5 = uploadedImageUrl5.url;
+        product.image_name_5 = uploadedImageUrl5.fileName;
+      }
+
+      if (!details.image_file_6) {
+        product.image_file_6 = uploadedImageUrl6.url;
+        product.image_name_6 = uploadedImageUrl6.fileName;
+      }
+
+      if (!details.image_file_7) {
+        product.image_file_7 = uploadedImageUrl7.url;
+        product.image_name_7 = uploadedImageUrl7.fileName;
+      }
+
+      if (!details.image_file_8) {
+        product.image_file_8 = uploadedImageUrl8.url;
+        product.image_name_8 = uploadedImageUrl8.fileName;
+      }
+
+      if (!details.image_file_9) {
+        product.image_file_9 = uploadedImageUrl9.url;
+        product.image_name_9 = uploadedImageUrl9.fileName;
+      }
+
+      if (!details.video_file) {
+        product.video_file = uploadedVideoUrl.url;
+        product.video_name = uploadedVideoUrl.fileName;
       }
     }
 
@@ -217,8 +319,53 @@ export class ProductService {
     }
 
     if (details.image_file) {
-      product.image_file = uploadedUrl.url;
-      product.image_name = uploadedUrl.fileName;
+      product.image_file = uploadedImageUrl.url;
+      product.image_name = uploadedImageUrl.fileName;
+    }
+
+    if (details.image_file_2) {
+      product.image_file_2 = uploadedImageUrl2.url;
+      product.image_name_2 = uploadedImageUrl2.fileName;
+    }
+
+    if (details.image_file_3) {
+      product.image_file_3 = uploadedImageUrl3.url;
+      product.image_name_3 = uploadedImageUrl3.fileName;
+    }
+
+    if (details.image_file_4) {
+      product.image_file_4 = uploadedImageUrl4.url;
+      product.image_name_4 = uploadedImageUrl4.fileName;
+    }
+
+    if (details.image_file_5) {
+      product.image_file_5 = uploadedImageUrl5.url;
+      product.image_name_5 = uploadedImageUrl5.fileName;
+    }
+
+    if (details.image_file_6) {
+      product.image_file_6 = uploadedImageUrl6.url;
+      product.image_name_6 = uploadedImageUrl6.fileName;
+    }
+
+    if (details.image_file_7) {
+      product.image_file_7 = uploadedImageUrl7.url;
+      product.image_name_7 = uploadedImageUrl7.fileName;
+    }
+
+    if (details.image_file_8) {
+      product.image_file_8 = uploadedImageUrl8.url;
+      product.image_name_8 = uploadedImageUrl8.fileName;
+    }
+
+    if (details.image_file_9) {
+      product.image_file_9 = uploadedImageUrl9.url;
+      product.image_name_9 = uploadedImageUrl9.fileName;
+    }
+
+    if (details.video_file) {
+      product.video_file = uploadedVideoUrl.url;
+      product.video_name = uploadedVideoUrl.fileName;
     }
 
     if (details.price) {
@@ -228,6 +375,18 @@ export class ProductService {
     if (details.quantity) {
       product.quantity = details.quantity;
     }
+
+    return await this.productRepository.save(product);
+  }
+
+  async addQuantity(id: number, quantity: number): Promise<Product> {
+    const product = await this.findById(id);
+
+    if (!product) {
+      throw new NotFoundException(`Product not found`);
+    }
+
+    product.quantity += quantity;
 
     return await this.productRepository.save(product);
   }

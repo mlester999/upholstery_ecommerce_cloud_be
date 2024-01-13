@@ -11,8 +11,8 @@ const spacesEndpoint = new AWS.Endpoint('sgp1.digitaloceanspaces.com');
 const S3 = new AWS.S3({
   endpoint: spacesEndpoint.href,
   credentials: new AWS.Credentials({
-    accessKeyId: 'DO00CTWMBGZ66RG7C2E8',
-    secretAccessKey: '67DH8ZXa4kK8FOovZYuXz6yE7bW8uidJBezLEtLhJkA',
+    accessKeyId: 'DO00VEU6UGLF9N9DEWMW',
+    secretAccessKey: 'HBgpKmKOZToagrXKauxuItJbmG+X+vlKSSoW7tb/LoQ',
   }),
 });
 
@@ -24,7 +24,7 @@ export const DoSpacesServiceProvider: Provider<AWS.S3> = {
 
 // This is just a simple interface that represents an uploaded file object
 export interface UploadedMulterFileI {
-  filename: string;
+  fieldname: string;
   originalname: string;
   encoding: string;
   mimetype: string;

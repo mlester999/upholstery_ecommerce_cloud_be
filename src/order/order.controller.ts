@@ -24,6 +24,8 @@ import { ActivityLogService } from 'src/activity-log/activity-log.service';
 import { OrderReceivedType } from './entities/order.entity';
 import { SellerBalanceService } from 'src/seller-balance/seller-balance.service';
 import { SellerBalanceStatusType } from 'src/seller-balance/entities/seller-balance.entity';
+import { SellerNotificationService } from 'src/seller-notification/seller-notification.service';
+import { AdminService } from 'src/admin/admin.service';
 
 @Controller('order')
 export class OrderController {
@@ -32,7 +34,9 @@ export class OrderController {
     private readonly customerService: CustomerService,
     private readonly shopService: ShopService,
     private readonly productService: ProductService,
+    private readonly adminService: AdminService,
     private readonly sellerBalanceService: SellerBalanceService,
+    private readonly sellerNotificationService: SellerNotificationService,
     private readonly activityLogService: ActivityLogService,
     private readonly jwtService: JwtService,
   ) {}
@@ -413,7 +417,6 @@ export class OrderController {
         message: 'Order Received Successfully.'
       };
     } catch (e) {
-      console.log(e);
       throw new UnauthorizedException();
     }
   }
@@ -494,7 +497,6 @@ export class OrderController {
         message: 'Order Received Successfully.'
       };
     } catch (e) {
-      console.log(e);
       throw new UnauthorizedException();
     }
   }
@@ -515,6 +517,37 @@ export class OrderController {
       }
 
       if (Object.keys(body.details).length <= 1) return;
+
+      if (body.details.purpose) {
+        const order = await this.orderService.findById(orderId);
+
+        if (!order) {
+          throw new BadRequestException('No Order Found.');
+        }
+
+        const orderedProducts = await Promise.all(
+          JSON.parse(order.products).map(async (product, index) => {
+            const productStatus = {
+              ...product,
+              status: product.id === body.details.product_id ? body.details.status : product.status,
+            };
+
+            return productStatus;
+          }),
+        );
+
+        if (orderedProducts.length === 0) {
+          throw new BadRequestException('No Products Found.');
+        }
+
+        const orderDetails = {
+          products: orderedProducts,
+        };
+
+        await this.orderService.updateOrder(orderDetails, parseInt(orderId));
+
+        return {message: 'Order Packed Successfully'};
+      }
 
       if (body.details.products) {
         const order = await this.orderService.findById(orderId);
@@ -623,8 +656,19 @@ export class OrderController {
           throw new BadRequestException('No Order Found.');
         }
 
+        const admin = await this.adminService.findByAdminId(body.details.admin_id);
+
+        if (!admin) {
+          throw new BadRequestException('No Admin Found.');
+        }
+
+        const getAllStatus = [];
+
         const orderedProducts = await Promise.all(
           JSON.parse(order.products).map(async (product, index) => {
+
+            getAllStatus.push(product.status);
+
             const productStatus = {
               ...product,
               status: body.details.status[index],
@@ -633,6 +677,32 @@ export class OrderController {
             return productStatus;
           }),
         );
+
+        function findAllDifferenceIndices(arr1, arr2) {
+          const maxLength = Math.max(arr1.length, arr2.length);
+          const diffIndices = [];
+        
+          for (let i = 0; i < maxLength; i++) {
+            if (arr1[i] !== arr2[i]) {
+              diffIndices.push(i);
+            }
+          }
+        
+          return diffIndices;
+        }
+
+        const diffIndices = findAllDifferenceIndices(getAllStatus, body.details.status);
+
+        diffIndices.map(async (el) => {
+          const getProduct = JSON.parse(order.products)[el];
+          const getShop = getProduct.shop;
+
+          const notificationId = randomUuid(14, 'ALPHANUM');
+
+          const notificationMessage = {title: `Delivery Update for Order ID: ${order.order_id}! 🚚`, description: `✨ Hello, ${getShop.seller.first_name}! The delivery status for a customer's order of your ${getProduct.name} is already ${body.details.status[el]}. Thank you 🤲`, is_active: ActiveType.Active}
+
+          const createdNotification = await this.sellerNotificationService.createSellerNotification(notificationMessage, notificationId, admin, getShop.seller);
+        })
 
         if (orderedProducts.length === 0) {
           throw new BadRequestException('No Products Found.');

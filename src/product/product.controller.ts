@@ -12,10 +12,11 @@ import {
   UnauthorizedException,
   UseInterceptors,
   Ip,
+  UploadedFiles,
 } from '@nestjs/common';
 import { BadRequestException } from '@nestjs/common/exceptions';
 import { JwtService } from '@nestjs/jwt';
-import { FileInterceptor } from '@nestjs/platform-express';
+import { AnyFilesInterceptor, FileInterceptor } from '@nestjs/platform-express';
 import { CategoryService } from 'src/category/category.service';
 import { ShopService } from 'src/shop/shop.service';
 import { ProductService } from './product.service';
@@ -24,6 +25,12 @@ import { diskStorage } from 'multer';
 import * as path from 'path';
 import { UploadedMulterFileI } from 'src/spaces-module/spaces-service';
 import { ActivityLogService } from 'src/activity-log/activity-log.service';
+import { randomUuid } from '../../utils/generateUuid';
+import { NotificationService } from 'src/notification/notification.service';
+import { FollowService } from 'src/follow/follow.service';
+import { ActiveType } from 'src/user/entities/user.entity';
+import { UserService } from 'src/user/user.service';
+import { SellerService } from 'src/seller/seller.service';
 
 @Controller('product')
 export class ProductController {
@@ -32,7 +39,11 @@ export class ProductController {
     private readonly categoryService: CategoryService,
     private readonly shopService: ShopService,
     private readonly activityLogService: ActivityLogService,
+    private readonly followService: FollowService,
+    private readonly notificationService: NotificationService,
     private readonly jwtService: JwtService,
+    private readonly userService: UserService,
+    private readonly sellerService: SellerService,
     private readonly doSpacesService: DoSpacesService,
   ) {}
 
@@ -76,7 +87,10 @@ export class ProductController {
   }
 
   @Get('/slug/:productSlug')
-  async findOneByOrderId(@Req() request, @Param('productSlug') productSlug) {
+  async findOneByProductSlug(
+    @Req() request,
+    @Param('productSlug') productSlug,
+  ) {
     try {
       const cookie = request.cookies['user_token'];
 
@@ -86,21 +100,49 @@ export class ProductController {
         throw new UnauthorizedException();
       }
 
-      console.log(productSlug)
+      const userId = parseInt(data['user_id']);
 
-      return this.productService.findBySlug(productSlug);
+      const user = await this.userService.findById(userId);
+
+      const seller = await this.sellerService.findByEmail(user.email);
+
+      return this.productService.findBySlug(productSlug, seller.id);
+    } catch (e) {
+      throw new UnauthorizedException();
+    }
+  }
+
+  @Get('/slug/:shopSlug/:productSlug')
+  async findOneByOrderId(
+    @Req() request,
+    @Param('shopSlug') shopSlug,
+    @Param('productSlug') productSlug,
+  ) {
+    try {
+      const cookie = request.cookies['user_token'];
+
+      const data = await this.jwtService.verifyAsync(cookie);
+
+      if (!data) {
+        throw new UnauthorizedException();
+      }
+
+      console.log(productSlug);
+      console.log(shopSlug);
+
+      return this.productService.findBySlugAndShop(productSlug, shopSlug);
     } catch (e) {
       throw new UnauthorizedException();
     }
   }
 
   @Post('add')
-  @UseInterceptors(FileInterceptor('image_file'))
+  @UseInterceptors(AnyFilesInterceptor())
   async addProduct(
     @Body() body: any,
     @Req() request,
-    @UploadedFile() file: UploadedMulterFileI,
-    @Ip() ip
+    @UploadedFiles() files: UploadedMulterFileI[],
+    @Ip() ip,
   ) {
     try {
       const cookie = request.cookies['user_token'];
@@ -127,24 +169,148 @@ export class ProductController {
         throw new BadRequestException('No Shop Found.');
       }
 
-      const uploadedUrl = await this.doSpacesService.uploadFile(
-        file,
+      const uploadedImageUrl = await this.doSpacesService.uploadFile(
+        files[0],
         details.shop_id,
         'products',
       );
 
+      let uploadedImageUrl2;
+
+      if (details.image_file_2) {
+        uploadedImageUrl2 = await this.doSpacesService.uploadFile(
+          files.find((el) => el.fieldname === 'image_file_2'),
+          details.shop_id,
+          'products',
+        );
+      }
+
+      let uploadedImageUrl3;
+
+      if (details.image_file_3) {
+        uploadedImageUrl3 = await this.doSpacesService.uploadFile(
+          files.find((el) => el.fieldname === 'image_file_3'),
+          details.shop_id,
+          'products',
+        );
+      }
+
+      let uploadedImageUrl4;
+
+      if (details.image_file_4) {
+        uploadedImageUrl4 = await this.doSpacesService.uploadFile(
+          files.find((el) => el.fieldname === 'image_file_4'),
+          details.shop_id,
+          'products',
+        );
+      }
+
+      let uploadedImageUrl5;
+
+      if (details.image_file_5) {
+        uploadedImageUrl5 = await this.doSpacesService.uploadFile(
+          files.find((el) => el.fieldname === 'image_file_5'),
+          details.shop_id,
+          'products',
+        );
+      }
+
+      let uploadedImageUrl6;
+
+      if (details.image_file_6) {
+        uploadedImageUrl6 = await this.doSpacesService.uploadFile(
+          files.find((el) => el.fieldname === 'image_file_6'),
+          details.shop_id,
+          'products',
+        );
+      }
+
+      let uploadedImageUrl7;
+
+      if (details.image_file_7) {
+        uploadedImageUrl7 = await this.doSpacesService.uploadFile(
+          files.find((el) => el.fieldname === 'image_file_7'),
+          details.shop_id,
+          'products',
+        );
+      }
+
+      let uploadedImageUrl8;
+
+      if (details.image_file_8) {
+        uploadedImageUrl8 = await this.doSpacesService.uploadFile(
+          files.find((el) => el.fieldname === 'image_file_8'),
+          details.shop_id,
+          'products',
+        );
+      }
+
+      let uploadedImageUrl9;
+
+      if (details.image_file_9) {
+        uploadedImageUrl9 = await this.doSpacesService.uploadFile(
+          files.find((el) => el.fieldname === 'image_file_9'),
+          details.shop_id,
+          'products',
+        );
+      }
+
+      let uploadedVideo;
+
+      if (details.video_file) {
+        uploadedVideo = await this.doSpacesService.uploadFile(
+          files.find((el) => el.fieldname === 'video_file'),
+          details.shop_id,
+          'products',
+        );
+      }
+
       const createdProduct = await this.productService.createProduct(
         details,
-        uploadedUrl,
         category,
         shop,
+        uploadedImageUrl,
+        uploadedImageUrl2,
+        uploadedImageUrl3,
+        uploadedImageUrl4,
+        uploadedImageUrl5,
+        uploadedImageUrl6,
+        uploadedImageUrl7,
+        uploadedImageUrl8,
+        uploadedImageUrl9,
+        uploadedVideo,
       );
 
-      await this.activityLogService.createActivityLog({title: 'create-product', description: `A new product named ${createdProduct.name} was created by ${createdProduct.shop.seller.first_name} ${createdProduct.shop.seller.last_name} in its shop named ${createdProduct.shop.name}`, ip_address: ip});
+      const shopFollowers = await this.followService.findByShopId(shop.id);
+
+      // Using the map function to iterate over the array
+      const notifications = await Promise.all(
+        shopFollowers.map(async (notification) => {
+          const notificationId = randomUuid(14, 'ALPHANUM');
+          const message = {
+            title: `🌟 A new product was added in our shop! 🛒`,
+            description: `✨ Dive into the latest addition of ${createdProduct.name} and elevate your shopping experience. Hurry, it's fresh off the shelves! 🚀`,
+            is_active: ActiveType.Active,
+          };
+          const createdNotification =
+            await this.notificationService.createNotification(
+              message,
+              notificationId,
+              notification.shop,
+              notification.customer,
+            );
+          return createdNotification;
+        }),
+      );
+
+      await this.activityLogService.createActivityLog({
+        title: 'create-product',
+        description: `A new product named ${createdProduct.name} was created by ${createdProduct.shop.seller.first_name} ${createdProduct.shop.seller.last_name} in its shop named ${createdProduct.shop.name}`,
+        ip_address: ip,
+      });
 
       return { message: 'Created Product Successfully.' };
     } catch (e) {
-      console.log(e);
       if (e.response?.message === 'No Category Found.') {
         throw new BadRequestException('No Category Found.');
       } else if (e.response?.message === 'No Shop Found.') {
@@ -156,13 +322,13 @@ export class ProductController {
   }
 
   @Patch('update/:product_id')
-  @UseInterceptors(FileInterceptor('image_file'))
+  @UseInterceptors(AnyFilesInterceptor())
   async updateProduct(
     @Body() body: any,
     @Param('product_id') productId,
     @Req() request,
-    @UploadedFile() file: UploadedMulterFileI,
-    @Ip() ip
+    @UploadedFiles() files: UploadedMulterFileI[],
+    @Ip() ip,
   ) {
     try {
       const cookie = request.cookies['user_token'];
@@ -202,47 +368,419 @@ export class ProductController {
         throw new BadRequestException('No Product Found.');
       }
 
-      let uploadedUrl;
+      let uploadedImageUrl;
+      let uploadedVideoUrl;
 
-      if (details.image_file) {
+      if (details.image_file && details.video_file) {
+        await this.doSpacesService.removeFile(
+          `products/${product.shop.id}/${product.image_name}`,
+        );
+
+        if (product.video_name) {
+          await this.doSpacesService.removeFile(
+            `products/${product.shop.id}/${product.video_name}`,
+          );
+        }
+
+        if (details.shop_id) {
+          uploadedImageUrl = await this.doSpacesService.uploadFile(
+            files[0],
+            details.shop_id,
+            'products',
+          );
+
+          if (details.video_file) {
+            uploadedVideoUrl = await this.doSpacesService.uploadFile(
+              files.find((el) => el.fieldname === 'video_file'),
+              details.shop_id,
+              'products',
+            );
+          }
+        } else {
+          uploadedImageUrl = await this.doSpacesService.uploadFile(
+            files[0],
+            product.shop.id,
+            'products',
+          );
+
+          if (details.video_file) {
+            uploadedVideoUrl = await this.doSpacesService.uploadFile(
+              files.find((el) => el.fieldname === 'video_file'),
+              details.shop_id,
+              'products',
+            );
+          }
+        }
+      } else if (details.image_file) {
         await this.doSpacesService.removeFile(
           `products/${product.shop.id}/${product.image_name}`,
         );
 
         if (details.shop_id) {
-          uploadedUrl = await this.doSpacesService.uploadFile(
-            file,
+          uploadedImageUrl = await this.doSpacesService.uploadFile(
+            files[0],
             details.shop_id,
             'products',
           );
         } else {
-          uploadedUrl = await this.doSpacesService.uploadFile(
-            file,
+          uploadedImageUrl = await this.doSpacesService.uploadFile(
+            files[0],
             product.shop.id,
             'products',
           );
         }
+      } else if (details.video_file) {
+        if (product.video_name) {
+          await this.doSpacesService.removeFile(
+            `products/${product.shop.id}/${product.video_name}`,
+          );
+        }
+
+        if (details.shop_id) {
+          if (details.video_file) {
+            uploadedVideoUrl = await this.doSpacesService.uploadFile(
+              files.find((el) => el.fieldname === 'video_file'),
+              details.shop_id,
+              'products',
+            );
+          }
+        } else {
+          if (details.video_file) {
+            uploadedVideoUrl = await this.doSpacesService.uploadFile(
+              files.find((el) => el.fieldname === 'video_file'),
+              details.shop_id,
+              'products',
+            );
+          }
+        }
       } else if (details.shop_id) {
-        uploadedUrl = await this.doSpacesService.renameFolder(
+        // PENDING, NOT YET OKAY
+        uploadedImageUrl = await this.doSpacesService.renameFolder(
           'products',
           product.shop.id,
           details.shop_id,
           product.image_name,
         );
+
+        if (product.image_name_2) {
+          await this.doSpacesService.renameFolder(
+            'products',
+            product.shop.id,
+            details.shop_id,
+            product.image_name_2,
+          );
+        }
+
+        if (product.image_name_3) {
+          await this.doSpacesService.renameFolder(
+            'products',
+            product.shop.id,
+            details.shop_id,
+            product.image_name_3,
+          );
+        }
+
+        if (product.image_name_4) {
+          await this.doSpacesService.renameFolder(
+            'products',
+            product.shop.id,
+            details.shop_id,
+            product.image_name_4,
+          );
+        }
+
+        if (product.image_name_5) {
+          await this.doSpacesService.renameFolder(
+            'products',
+            product.shop.id,
+            details.shop_id,
+            product.image_name_5,
+          );
+        }
+
+        if (product.image_name_6) {
+          await this.doSpacesService.renameFolder(
+            'products',
+            product.shop.id,
+            details.shop_id,
+            product.image_name_6,
+          );
+        }
+
+        if (product.image_name_7) {
+          await this.doSpacesService.renameFolder(
+            'products',
+            product.shop.id,
+            details.shop_id,
+            product.image_name_7,
+          );
+        }
+
+        if (product.image_name_8) {
+          await this.doSpacesService.renameFolder(
+            'products',
+            product.shop.id,
+            details.shop_id,
+            product.image_name_8,
+          );
+        }
+
+        if (product.image_name_9) {
+          await this.doSpacesService.renameFolder(
+            'products',
+            product.shop.id,
+            details.shop_id,
+            product.image_name_9,
+          );
+        }
+
+        if (product.video_name) {
+          uploadedVideoUrl = await this.doSpacesService.renameFolder(
+            'products',
+            product.shop.id,
+            details.shop_id,
+            product.video_name,
+          );
+        }
+      }
+
+      let uploadedImageUrl2;
+
+      if (details.image_file_2) {
+        await this.doSpacesService.removeFile(
+          `products/${product.shop.id}/${product.image_name_2}`,
+        );
+
+        if (details.shop_id) {
+          uploadedImageUrl2 = await this.doSpacesService.uploadFile(
+            files.find((el) => el.fieldname === 'image_file_2'),
+            details.shop_id,
+            'products',
+          );
+        } else {
+          uploadedImageUrl2 = await this.doSpacesService.uploadFile(
+            files.find((el) => el.fieldname === 'image_file_2'),
+            product.shop.id,
+            'products',
+          );
+        }
+      }
+
+      let uploadedImageUrl3;
+
+      if (details.image_file_3) {
+        await this.doSpacesService.removeFile(
+          `products/${product.shop.id}/${product.image_name_3}`,
+        );
+
+        if (details.shop_id) {
+          uploadedImageUrl3 = await this.doSpacesService.uploadFile(
+            files.find((el) => el.fieldname === 'image_file_3'),
+            details.shop_id,
+            'products',
+          );
+        } else {
+          uploadedImageUrl3 = await this.doSpacesService.uploadFile(
+            files.find((el) => el.fieldname === 'image_file_3'),
+            product.shop.id,
+            'products',
+          );
+        }
+      }
+
+      let uploadedImageUrl4;
+
+      if (details.image_file_4) {
+        await this.doSpacesService.removeFile(
+          `products/${product.shop.id}/${product.image_name_4}`,
+        );
+
+        if (details.shop_id) {
+          uploadedImageUrl4 = await this.doSpacesService.uploadFile(
+            files.find((el) => el.fieldname === 'image_file_4'),
+            details.shop_id,
+            'products',
+          );
+        } else {
+          uploadedImageUrl4 = await this.doSpacesService.uploadFile(
+            files.find((el) => el.fieldname === 'image_file_4'),
+            product.shop.id,
+            'products',
+          );
+        }
+      }
+
+      let uploadedImageUrl5;
+
+      if (details.image_file_5) {
+        await this.doSpacesService.removeFile(
+          `products/${product.shop.id}/${product.image_name_5}`,
+        );
+
+        if (details.shop_id) {
+          uploadedImageUrl5 = await this.doSpacesService.uploadFile(
+            files.find((el) => el.fieldname === 'image_file_5'),
+            details.shop_id,
+            'products',
+          );
+        } else {
+          uploadedImageUrl5 = await this.doSpacesService.uploadFile(
+            files.find((el) => el.fieldname === 'image_file_5'),
+            product.shop.id,
+            'products',
+          );
+        }
+      }
+
+      let uploadedImageUrl6;
+
+      if (details.image_file_6) {
+        await this.doSpacesService.removeFile(
+          `products/${product.shop.id}/${product.image_name_6}`,
+        );
+
+        if (details.shop_id) {
+          uploadedImageUrl6 = await this.doSpacesService.uploadFile(
+            files.find((el) => el.fieldname === 'image_file_6'),
+            details.shop_id,
+            'products',
+          );
+        } else {
+          uploadedImageUrl6 = await this.doSpacesService.uploadFile(
+            files.find((el) => el.fieldname === 'image_file_6'),
+            product.shop.id,
+            'products',
+          );
+        }
+      }
+
+      let uploadedImageUrl7;
+
+      if (details.image_file_7) {
+        await this.doSpacesService.removeFile(
+          `products/${product.shop.id}/${product.image_name_7}`,
+        );
+
+        if (details.shop_id) {
+          uploadedImageUrl7 = await this.doSpacesService.uploadFile(
+            files.find((el) => el.fieldname === 'image_file_7'),
+            details.shop_id,
+            'products',
+          );
+        } else {
+          uploadedImageUrl7 = await this.doSpacesService.uploadFile(
+            files.find((el) => el.fieldname === 'image_file_7'),
+            product.shop.id,
+            'products',
+          );
+        }
+      }
+
+      let uploadedImageUrl8;
+
+      if (details.image_file_8) {
+        await this.doSpacesService.removeFile(
+          `products/${product.shop.id}/${product.image_name_8}`,
+        );
+
+        if (details.shop_id) {
+          uploadedImageUrl8 = await this.doSpacesService.uploadFile(
+            files.find((el) => el.fieldname === 'image_file_8'),
+            details.shop_id,
+            'products',
+          );
+        } else {
+          uploadedImageUrl8 = await this.doSpacesService.uploadFile(
+            files.find((el) => el.fieldname === 'image_file_8'),
+            product.shop.id,
+            'products',
+          );
+        }
+      }
+
+      let uploadedImageUrl9;
+
+      if (details.image_file_9) {
+        // await this.doSpacesService.removeFile(
+        //   `products/${product.shop.id}/${product.image_name_9}`,
+        // );
+
+        if (details.shop_id) {
+          uploadedImageUrl9 = await this.doSpacesService.uploadFile(
+            files.find((el) => el.fieldname === 'image_file_9'),
+            details.shop_id,
+            'products',
+          );
+        } else {
+          uploadedImageUrl9 = await this.doSpacesService.uploadFile(
+            files.find((el) => el.fieldname === 'image_file_9'),
+            product.shop.id,
+            'products',
+          );
+        }
       }
 
       const updatedProduct = await this.productService.updateProduct(
         details,
-        uploadedUrl,
         parseInt(productId),
         category,
         shop,
+        uploadedImageUrl,
+        uploadedImageUrl2,
+        uploadedImageUrl3,
+        uploadedImageUrl4,
+        uploadedImageUrl5,
+        uploadedImageUrl6,
+        uploadedImageUrl7,
+        uploadedImageUrl8,
+        uploadedImageUrl9,
+        uploadedVideoUrl,
       );
 
-      await this.activityLogService.createActivityLog({title: 'update-product', description: `A product named ${updatedProduct.name} was updated by ${updatedProduct.shop.seller.first_name} ${updatedProduct.shop.seller.last_name} in its shop named ${updatedProduct.shop.name}`, ip_address: ip});
+      await this.activityLogService.createActivityLog({
+        title: 'update-product',
+        description: `A product named ${updatedProduct.name} was updated by ${updatedProduct.shop.seller.first_name} ${updatedProduct.shop.seller.last_name} in its shop named ${updatedProduct.shop.name}`,
+        ip_address: ip,
+      });
 
       return { message: 'Updated product details successfully.' };
     } catch (e) {
+      console.log(e);
+      throw new UnauthorizedException();
+    }
+  }
+
+  @Patch('add-quantity/:product_id')
+  async addQuantity(
+    @Body() body: any,
+    @Param('product_id') productId,
+    @Req() request,
+  ) {
+    try {
+      const cookie = request.cookies['user_token'];
+
+      const data = await this.jwtService.verifyAsync(cookie);
+
+      if (!data) {
+        throw new UnauthorizedException();
+      }
+
+      const product = await this.productService.findById(productId);
+
+      if (!product) {
+        throw new BadRequestException('No Product Found.');
+      }
+
+      await this.productService.addQuantity(
+        product.id,
+        Number(body.details.quantity),
+      );
+
+      return { message: 'Deactivated product successfully.' };
+    } catch (e) {
+      if (e.response.message === 'No Product Found.') {
+        throw new BadRequestException('No Product Found.');
+      }
       throw new UnauthorizedException();
     }
   }

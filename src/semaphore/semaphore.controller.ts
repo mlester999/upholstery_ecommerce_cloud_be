@@ -13,17 +13,7 @@ export class SemaphoreController {
 
   @Post('send-otp')
   async sendOtp(@Body() body: any, @Req() request) {
-    const cookie = request.cookies['user_token'];
-
-    const data = await this.jwtService.verifyAsync(cookie);
-
-    if (!data) {
-      throw new UnauthorizedException();
-    }
-
     if (Object.keys(body.details).length === 0) return;
-
-    console.log(process.env);
 
     const {contact_number} = body.details;
 
@@ -42,9 +32,6 @@ export class SemaphoreController {
           },
         }
       );
-
-      // Handle the response as needed
-      console.log("Response:", response.data[0]);
 
       return {sms: response.data[0].code}
 

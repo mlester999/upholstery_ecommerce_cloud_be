@@ -10,13 +10,11 @@ export class AppController {
   @UseGuards(JwtGuard)
   @Get('/login')
   getHello(@Req() req): string {
-    console.log(req.cookies);
     return this.appService.getHello();
   }
 
   @Get('/public/login')
   publicGetHello(@Req() req): string {
-    console.log(req.cookies);
     return this.appService.getHello();
   }
 }

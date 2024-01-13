@@ -61,6 +61,15 @@ export class AdminService {
     });
   }
 
+  async findByAdminId(id: number): Promise<Admin | undefined> {
+    return this.adminRepository.findOne({
+      where: { id },
+      relations: {
+        user: true,
+      },
+    });
+  }
+
   async findByEmail(email: string): Promise<Admin | undefined> {
     return this.adminRepository.findOne({
       where: { user: { email, user_type: UserType.Admin } },
@@ -122,20 +131,20 @@ export class AdminService {
 
     if (Object.keys(body.details).length <= 1 && body.details.email) return;
 
-    if (body.details.firstName) {
-      admin.first_name = body.details.firstName;
+    if (body.details.first_name) {
+      admin.first_name = body.details.first_name;
     }
 
-    if (body.details.middleName || body.details.middleName === '') {
-      admin.middle_name = body.details.middleName;
+    if (body.details.middle_name || body.details.middle_name === '') {
+      admin.middle_name = body.details.middle_name;
     }
 
-    if (body.details.lastName) {
-      admin.last_name = body.details.lastName;
+    if (body.details.last_name) {
+      admin.last_name = body.details.last_name;
     }
 
-    if (body.details.contactNumber) {
-      admin.contact_number = body.details.contactNumber;
+    if (body.details.contact_number) {
+      admin.contact_number = body.details.contact_number;
     }
 
     if (body.details.gender) {

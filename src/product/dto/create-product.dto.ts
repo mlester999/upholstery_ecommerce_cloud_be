@@ -34,6 +34,14 @@ export class CreateProductDto {
   @IsNotEmpty()
   image_file: string;
 
+  @IsString()
+  @IsOptional()
+  video_name?: string;
+
+  @IsString()
+  @IsOptional()
+  video_file?: string;
+
   @IsNumber()
   @IsNotEmpty()
   price: number;

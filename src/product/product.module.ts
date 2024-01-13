@@ -17,13 +17,21 @@ import { ActivityLogService } from 'src/activity-log/activity-log.service';
 import { ActivityLog } from 'src/activity-log/entities/activity-log.entity';
 import { ReturnRefundModule } from 'src/return-refund/return-refund.module';
 import { ReviewModule } from 'src/review/review.module';
+import { Notification } from 'src/notification/entities/notification.entity';
+import { NotificationService } from 'src/notification/notification.service';
+import { Follow } from 'src/follow/entities/follow.entity';
+import { FollowService } from 'src/follow/follow.service';
+import { User } from 'src/user/entities/user.entity';
+import { UserService } from 'src/user/user.service';
+import { Seller } from 'src/seller/entities/seller.entity';
+import { SellerService } from 'src/seller/seller.service';
 
 @Module({
   imports: [
     AuthModule,
     ReturnRefundModule,
     ReviewModule,
-    TypeOrmModule.forFeature([Product, Category, Shop, ActivityLog]),
+    TypeOrmModule.forFeature([Product, Category, Shop, Follow, Notification, User, Seller, ActivityLog]),
     PassportModule.register({ defaultStrategy: 'jwt', session: false }),
     JwtModule.register({
       secret: JwtSecretKeyTMP,
@@ -37,6 +45,10 @@ import { ReviewModule } from 'src/review/review.module';
     ShopService,
     DoSpacesServiceProvider,
     DoSpacesService,
+    FollowService,
+    NotificationService,
+    UserService,
+    SellerService,
     ActivityLogService,
     JwtStrategy,
   ],

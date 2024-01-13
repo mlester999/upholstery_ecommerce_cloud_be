@@ -8,6 +8,7 @@ import {
   Req,
   Res,
   BadRequestException,
+  Patch,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { UserService } from '../user/user.service';
@@ -16,10 +17,12 @@ import { UnauthorizedException } from '@nestjs/common/exceptions/unauthorized.ex
 import { CreateUserDto } from 'src/user/dto/create-user.dto';
 import { CreateAdminDto } from 'src/admin/dto/create-admin.dto';
 import { AdminService } from 'src/admin/admin.service';
-import { UserType } from 'src/user/entities/user.entity';
+import { ActiveType, UserType } from 'src/user/entities/user.entity';
 import { CustomerService } from 'src/customer/customer.service';
 import { CreateCustomerDto } from 'src/customer/dto/create-customer.dto';
 import { SellerService } from 'src/seller/seller.service';
+import { randomUuid } from '../../utils/generateUuid';
+import axios from 'axios';
 
 @Controller('auth')
 export class AuthController {
@@ -30,6 +33,26 @@ export class AuthController {
     private readonly customerService: CustomerService,
     private readonly jwtService: JwtService,
   ) {}
+
+  @Get('create-super-admin-account')
+  async createSuperAdminAccount() {
+    const details = {email: 'superadmin@email.com', password: '12345678', user_type: UserType.SuperAdmin, is_active: ActiveType.Active}
+    
+    const user = await this.userService.createUser(
+      details,
+      UserType.SuperAdmin,
+    );
+
+    if (!user) {
+      throw new BadRequestException('Failed creating a user.');
+    }
+
+    const adminDetails = {first_name: 'Super', middle_name: '', last_name: 'Admin', gender: 'Male', contact_number: '09558369140', contact_number_verified_at: null}
+
+    const admin = await this.adminService.createAdmin(adminDetails, user);
+
+    return 'Super Admin created!';
+  }
 
   // Customer Sign-up API
   @Post('/customer/sign-up')
@@ -74,6 +97,136 @@ export class AuthController {
     return { user, admin };
   }
 
+    // Seller Forgot Password API
+    @Patch('/seller/forgot-password')
+    async sellerForgotPassword(
+      @Body('email') email: string,
+    ) {
+      const seller = await this.sellerService.findByEmail(email);
+  
+      if (!seller || !seller.user.is_active) {
+        throw new BadRequestException(
+          'No account is associated with the email provided.',
+        );
+      }
+
+      if (!seller.contact_number_verified_at) {
+        throw new BadRequestException(
+          'The phone number associated with the account has not been verified.',
+        );
+      }
+  
+      return { seller, message: 'You need to verify the phone number provided first.' };
+    }
+
+    // Seller Reset Password API
+    @Patch('/seller/reset-password')
+    async sellerResetPassword(
+      @Body('email') email: string,
+    ) {
+      const seller = await this.sellerService.findByEmail(email);
+  
+      if (!seller || !seller.user.is_active) {
+        throw new BadRequestException(
+          'No account is associated with the email provided.',
+        );
+      }
+
+      if (!seller.contact_number_verified_at) {
+        throw new BadRequestException(
+          'The phone number associated with the account has not been verified.',
+        );
+      }
+
+      const newPass = randomUuid(10, 'alphanum');
+      const salt = await bcrypt.genSalt();
+      const hashedPassword = await bcrypt.hash(newPass, salt);
+
+      const sellerNewPass = await this.userService.forgotPasswordUser(seller.user.id, hashedPassword);
+
+      const response = await axios.post(
+        "https://api.semaphore.co/api/v4/priority",
+        {
+          number: seller.contact_number,
+          message: `Hello, ${seller.first_name}! Your temporary password is: ${newPass}. For security reasons, please update it as soon as possible. Welcome back!`,
+          sendername: process.env.SEMAPHORE_SENDER_NAME,
+          apikey: process.env.SEMAPHORE_API_KEY,
+        },
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
+  
+      return { seller, message: 'Password Reset Successfully.' };
+    }
+
+    // Customer Forgot Password API
+    @Patch('/customer/forgot-password')
+    async customerForgotPassword(
+      @Body('email') email: string,
+    ) {
+      const customer = await this.customerService.findByEmail(email);
+  
+      if (!customer || !customer.user.is_active) {
+        throw new BadRequestException(
+          'No account is associated with the email provided.',
+        );
+      }
+
+      if (!customer.contact_number_verified_at) {
+        throw new BadRequestException(
+          'The phone number associated with the account has not been verified.',
+        );
+      }
+  
+      return { customer, message: 'You need to verify the phone number provided first.' };
+    }
+
+      // Customer Reset Password API
+      @Patch('/customer/reset-password')
+      async customerResetPassword(
+        @Body('email') email: string,
+      ) {
+        const customer = await this.customerService.findByEmail(email);
+    
+        if (!customer || !customer.user.is_active) {
+          throw new BadRequestException(
+            'No account is associated with the email provided.',
+          );
+        }
+  
+        if (!customer.contact_number_verified_at) {
+          throw new BadRequestException(
+            'The phone number associated with the account has not been verified.',
+          );
+        }
+  
+        const newPass = randomUuid(10, 'alphanum');
+        const salt = await bcrypt.genSalt();
+        const hashedPassword = await bcrypt.hash(newPass, salt);
+  
+        const customerNewPass = await this.userService.forgotPasswordUser(customer.user.id, hashedPassword);
+  
+        const response = await axios.post(
+          "https://api.semaphore.co/api/v4/priority",
+          {
+            number: customer.contact_number,
+            message: `Hello, ${customer.first_name}! Your temporary password is: ${newPass}. For security reasons, please update it as soon as possible. Welcome back!`,
+            sendername: process.env.SEMAPHORE_SENDER_NAME,
+            apikey: process.env.SEMAPHORE_API_KEY,
+          },
+          {
+            headers: {
+              "Content-Type": "application/json",
+            },
+          }
+        );
+    
+        return { customer, message: 'Password Reset Successfully.' };
+      }
+
   // Customer Login API
   @Post('/customer/login')
   async customerLogin(
@@ -83,14 +236,14 @@ export class AuthController {
   ) {
     const customer = await this.customerService.findByEmail(email);
 
-    if (!customer) {
+    if (!customer || !customer.user.is_active) {
       throw new BadRequestException(
         'No account is associated with the email provided.',
       );
     }
 
     if (!(await bcrypt.compare(password, customer.user.password))) {
-      throw new BadRequestException('Invalid credentials.');
+      throw new BadRequestException('Invalid email or password.');
     }
 
     const jwt = await this.jwtService.signAsync({
@@ -105,7 +258,7 @@ export class AuthController {
       secure: true,
     });
 
-    return { message: 'Login successfully.' };
+    return { message: 'Login successfully.', customer_id: customer.id };
   }
 
   // Seller Login API
@@ -117,14 +270,14 @@ export class AuthController {
   ) {
     const seller = await this.sellerService.findByEmail(email);
 
-    if (!seller) {
+    if (!seller || !seller.user.is_active) {
       throw new BadRequestException(
         'No account is associated with the email provided.',
       );
     }
 
     if (!(await bcrypt.compare(password, seller.user.password))) {
-      throw new BadRequestException('Invalid credentials.');
+      throw new BadRequestException('Invalid email or password.');
     }
 
     const jwt = await this.jwtService.signAsync({
@@ -151,14 +304,14 @@ export class AuthController {
   ) {
     const admin = await this.adminService.findByEmailAuth(email);
 
-    if (!admin) {
+    if (!admin || !admin.user.is_active) {
       throw new BadRequestException(
         'No account is associated with the email provided.',
       );
     }
 
     if (!(await bcrypt.compare(password, admin.user.password))) {
-      throw new BadRequestException('Invalid credentials.');
+      throw new BadRequestException('Invalid email or password.');
     }
 
     const jwt = await this.jwtService.signAsync({
